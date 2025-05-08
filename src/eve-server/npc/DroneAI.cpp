@@ -236,22 +236,30 @@ void DroneAIMgr::ClearAllTargets() {
 
 void DroneAIMgr::Target(SystemEntity* pTarget) {
     bool chase = false;
-    if (!m_pDrone->TargetMgr()->StartTargeting(pTarget, m_pDrone->GetSelf()->GetAttribute(AttrScanSpeed).get_uint32(), (uint8)m_pDrone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange, chase)) {
+    if (!m_pDrone->TargetMgr()->StartTargeting(
+            pTarget,
+            m_pDrone->GetSelf()->GetAttribute(AttrScanSpeed).get_uint32(),
+            (uint8)m_pDrone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(),
+            m_entityAttackRange,
+            chase)) {
         _log(DRONE__AI_TRACE, "Drone %s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
              m_pDrone->GetName(), m_pDrone->GetID(), pTarget->GetName(), pTarget->GetID());
-        //ClearAllTargets();
         SetIdle();
         return;
     }
+
+    // ✅ Enable mining state if the target is an asteroid
+    if (pTarget->GetGroupID() == EVEDB::invGroups::Asteroid) {
+        m_target = pTarget;
+        m_state = DroneAI::State::Mining;
+        _log(DRONE__AI_TRACE, "Drone %s(%u): Target is asteroid %s(%u), switching to Mining state.",
+            m_pDrone->GetName(), m_pDrone->GetID(), pTarget->GetName(), pTarget->GetID());
+        return;
+    }
+
+    // Otherwise, proceed as normal
     m_beginFindTarget.Disable();
     CheckDistance(pTarget);
-
-    /*
-    std::map<std::string, PyRep *> arg;
-    arg["target"] = new PyInt(args.arg);
-    throw PyException(MakeUserError("DeniedDroneTargetForceField", arg));
-    */
- //DeniedDroneTargetForceField
 }
 
 void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
