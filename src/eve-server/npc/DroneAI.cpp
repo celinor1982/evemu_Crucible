@@ -105,7 +105,33 @@ void DroneAIMgr::Process() {
         case DroneAI::State::Guarding:
         case DroneAI::State::Assisting:
         case DroneAI::State::Combat:
-        case DroneAI::State::Mining:
+        case DroneAI::State::Mining: {
+            if (m_target == nullptr || m_target->GetGroupID() != EVEDB::invGroups::Asteroid) {
+                _log(DRONE__AI_TRACE, "Drone %s(%u): Target invalid or not asteroid. Returning to idle.",
+                    m_pDrone->GetName(), m_pDrone->GetID());
+                SetIdle();
+                return;
+            }
+    
+            CheckDistance(m_target);
+    
+            if (!m_mainAttackTimer.Enabled())
+                m_mainAttackTimer.Start(4000);  // 4-second mining ticks
+    
+            if (m_mainAttackTimer.Check()) {
+                _log(DRONE__AI_TRACE, "Drone %s(%u): Mining asteroid %s(%u).",
+                    m_pDrone->GetName(), m_pDrone->GetID(), m_target->GetName(), m_target->GetID());
+    
+                m_pDrone->DestinyMgr()->SendSpecialEffect(
+                    m_pDrone,
+                    m_target,
+                    "effects.Mining",
+                    "miningEffect",
+                    0, 0, 0, 0, 0
+                );
+            }
+        } break;
+      
         case DroneAI::State::Approaching:
         case DroneAI::State::Departing2:
         case DroneAI::State::Pursuit: {
