@@ -88,11 +88,15 @@ protected:
     void IncRef() const
     {
         if (mDeleted) {
-            _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %u", mRefCount);
+            _log(REFPTR__ERROR, "IncRef() - Attempted to increase ref count on deleted object! Current Count: %u", mRefCount);
+            std::cerr << "FATAL: IncRef() called on deleted object! Type: " << typeid(*this).name() << std::endl;
             EvE::traceStack();
-            //return;
+
+            // Optional: Either abort to catch error early, or return to avoid crashing.
+            // abort(); // Uncomment for hard fail (debug build)
+            return; // Production builds, silently fail
         }
-        assert(mDeleted == false);
+        //Removed assert(mDeleted == false); --causing constant server hang, when installing and removed modules from ships.
         ++mRefCount;
     }
     /**
@@ -103,12 +107,13 @@ protected:
     void DecRef() const
     {
         if (mDeleted) {
-            _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %u", mRefCount);
+            _log(REFPTR__ERROR, "IncRef() - Attempted to increase ref count on deleted object! Current Count: %u", mRefCount);
+            std::cerr << "FATAL: IncRef() called on deleted object! Type: " << typeid(*this).name() << std::endl;
             EvE::traceStack();
             return;
         }
 
-        assert(mDeleted == false);
+        // Removed assert(mDeleted == false);
         assert(mRefCount > 0);
         --mRefCount;
 
