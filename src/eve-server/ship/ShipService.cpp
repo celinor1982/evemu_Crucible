@@ -23,10 +23,6 @@
 */
 
 #include "eve-server.h"
-
-
-
-
 #include "EVEServerConfig.h"
 #include "npc/Drone.h"
 #include "planet/CustomsOffice.h"
