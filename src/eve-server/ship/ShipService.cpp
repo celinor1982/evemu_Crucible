@@ -908,7 +908,7 @@ PyResult ShipBound::CmdMine(PyCallArgs &call, PyList* droneIDs) {
     Client* pClient = call.client;
     SystemEntity* target = pClient->GetShipSE()->TargetMgr()->GetFirstTarget();
 
-    if (!target || !target->IsAsteroid())
+    if (!target || !target->IsAsteroidSE())
         throw CustomError("Target is not a valid asteroid for mining.");
 
     for (PyRep* rep : droneIDs->items) {
