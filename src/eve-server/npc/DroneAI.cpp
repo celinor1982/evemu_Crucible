@@ -160,11 +160,7 @@ void DroneAIMgr::Process() {
                     oreRef->Delete();  // simulate ore being lost
                     return;
                 }
-                
-                oreRef->Move(shipRef->itemID(), flagCargoHold, false);
-                shipRef->AddItem(oreRef);
-
-        
+              
                 oreRef->Move(shipRef->itemID(), flagCargoHold, false);
                 shipRef->AddItem(oreRef);
         
