@@ -851,7 +851,7 @@ PyResult ShipBound::CmdEngage(PyCallArgs &call, PyList* droneIDs) {
 
     for (PyRep* rep : droneIDs->items) {
         uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = m_pClient->SystemMgr()->GetSE(droneID);
+        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
         DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
         if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
             drone->SetTarget(target);
@@ -866,7 +866,7 @@ PyResult ShipBound::CmdReturnBay(PyCallArgs &call, PyList* droneIDs) {
 
     for (PyRep* rep : droneIDs->items) {
         uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = m_pClient->SystemMgr()->GetSE(droneID);
+        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
         DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
         if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
             drone->GetAI()->Return();  // Changes state to return-to-ship
@@ -880,7 +880,7 @@ PyResult ShipBound::CmdAbandonDrone(PyCallArgs &call, PyList* droneIDs) {
 
     for (PyRep* rep : droneIDs->items) {
         uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = m_pClient->SystemMgr()->GetSE(droneID);
+        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
         DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
         if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
             drone->Abandon();  // Clears ownership/controller and stops AI
@@ -895,7 +895,7 @@ PyResult ShipBound::CmdOrbit(PyCallArgs &call, PyList* droneIDs) {
 
     for (PyRep* rep : droneIDs->items) {
         uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = m_pClient->SystemMgr()->GetSE(droneID);
+        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
         DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
         if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
             drone->IdleOrbit(ship);
@@ -913,7 +913,7 @@ PyResult ShipBound::CmdMine(PyCallArgs &call, PyList* droneIDs) {
 
     for (PyRep* rep : droneIDs->items) {
         uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = m_pClient->SystemMgr()->GetSE(droneID);
+        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
         DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
         if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
             drone->SetTarget(target);
@@ -930,7 +930,7 @@ PyResult ShipBound::CmdReturnAndOrbit(PyCallArgs &call, PyList* droneIDs) {
 
     for (PyRep* rep : droneIDs->items) {
         uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = m_pClient->SystemMgr()->GetSE(droneID);
+        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
         DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
         if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
             drone->GetAI()->Return();
