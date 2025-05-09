@@ -16,6 +16,8 @@
 #include "npc/DroneAI.h"
 #include "system/Damage.h"
 #include "system/SystemBubble.h"
+#include "inventory/ItemRef.h"
+#include "system/DestinyManager.h"
 
 DroneAIMgr::DroneAIMgr(DroneSE* who)
 : m_state(DroneAI::State::Idle),
@@ -105,85 +107,85 @@ void DroneAIMgr::Process() {
         case DroneAI::State::Guarding:
         case DroneAI::State::Assisting:
         case DroneAI::State::Combat:
-    case DroneAI::State::Mining: {
-        if (!m_target || m_target->GetCategoryID() != EVEDB::invCategories::Asteroid) {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Target invalid or not asteroid. Returning to idle.",
-                m_pDrone->GetName(), m_pDrone->GetID());
-            SetIdle();
-            return;
-        }
-
-        CheckDistance(m_target);
-
-        if (!m_mainAttackTimer.Enabled())
-            m_mainAttackTimer.Start(4000);  // 4s mining pulse
-
-        if (m_mainAttackTimer.Check()) {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Mining asteroid %s(%u).",
-                m_pDrone->GetName(), m_pDrone->GetID(), m_target->GetName(), m_target->GetID());
-
-            m_pDrone->DestinyMgr()->SendSpecialEffect(
-                m_pDrone,
-                m_target,
-                "effects.Mining",
-                "miningEffect",
-                0, 0, 0, 0, 0
-            );
-
-            // Create ore item
-            InventoryItemRef roidRef(m_target->GetSelf());
-            float oreAmount = 1.0f;
-            ItemData idata(roidRef->typeID(), m_pDrone->GetOwnerID(), locTemp, flagNone, oreAmount);
-            InventoryItemRef oreRef = sItemFactory.SpawnItem(idata);
-
-            if (!oreRef.get()) {
-                _log(DRONE__ERROR, "Drone %s(%u): Failed to create ore item.", m_pDrone->GetName(), m_pDrone->GetID());
-                return;
-            }
-
-            ShipSE* pShip = m_pDrone->GetPilot()->GetShipSE();
-            if (!pShip) {
-                _log(DRONE__ERROR, "Drone %s(%u): Owner ship not found.", m_pDrone->GetName(), m_pDrone->GetID());
-                oreRef->Delete();
-                return;
-            }
-
-            InventoryItemRef shipRef = pShip->GetSelf();
-            if (!shipRef->AddItem(oreRef, flagCargoHold)) {
-                _log(DRONE__AI_TRACE, "Drone %s(%u): Cargo full. Ore discarded.", m_pDrone->GetName(), m_pDrone->GetID());
-                oreRef->Delete();
-                m_pDrone->GetPilot()->SendNotifyMsg("%s disperses its ore because the cargo hold is full.", m_pDrone->GetName());
-            }
-
-            // Deplete asteroid
-            float roidQuantity = roidRef->GetAttribute(AttrQuantity).get_float();
-            roidQuantity -= oreAmount;
-
-            if (roidQuantity <= 0.0f) {
-                _log(DRONE__AI_TRACE, "Asteroid %s(%u) depleted by drone %s(%u).",
-                    roidRef->name(), roidRef->itemID(), m_pDrone->GetName(), m_pDrone->GetID());
-
-                m_pDrone->TargetMgr()->ClearTarget(m_target);
-                m_pDrone->GetPilot()->SendNotifyMsg("%s deactivates as the asteroid has been depleted.", m_pDrone->GetName());
-
-                SystemEntity* deadRoid = m_target;
-                m_target = nullptr;
-                deadRoid->Delete();
+        case DroneAI::State::Mining: {
+            if (!m_target || m_target->GetCategoryID() != EVEDB::invCategories::Asteroid) {
+                _log(DRONE__AI_TRACE, "Drone %s(%u): Target invalid or not asteroid. Returning to idle.",
+                    m_pDrone->GetName(), m_pDrone->GetID());
                 SetIdle();
                 return;
             }
-
-            // Update remaining ore and radius
-            roidRef->SetAttribute(AttrQuantity, roidQuantity);
-            double newRadius = exp((roidQuantity + 112404.8) / 25000);
-            roidRef->SetAttribute(AttrRadius, newRadius);
-        }
-    } break;
-      
-        case DroneAI::State::Approaching:
-        case DroneAI::State::Departing2:
-        case DroneAI::State::Pursuit: {
-           // do nothing here yet
+        
+            CheckDistance(m_target);
+        
+            if (!m_mainAttackTimer.Enabled())
+                m_mainAttackTimer.Start(4000);  // 4s mining pulse
+        
+            if (m_mainAttackTimer.Check()) {
+                _log(DRONE__AI_TRACE, "Drone %s(%u): Mining asteroid %s(%u).",
+                    m_pDrone->GetName(), m_pDrone->GetID(), m_target->GetName(), m_target->GetID());
+        
+                m_pDrone->DestinyMgr()->SendSpecialEffect(
+                    m_pDrone->GetID(),        // entityID
+                    0,                        // moduleID (none)
+                    0,                        // moduleTypeID
+                    m_target->GetID(),        // targetID
+                    0,                        // chargeTypeID
+                    "effects.Mining",         // effect GUID
+                    false,                    // isOffensive
+                    true,                     // start
+                    true,                     // isActive
+                    10000,                    // duration (ms)
+                    1,                        // repeat
+                    0                         // graphicInfo
+                );
+        
+                InventoryItemRef roidRef(m_target->GetSelf());
+                float oreAmount = 1.0f;
+                ItemData idata(roidRef->typeID(), m_pDrone->GetOwnerID(), locTemp, flagNone, oreAmount);
+                InventoryItemRef oreRef = sItemFactory.SpawnItem(idata);
+        
+                if (!oreRef.get()) {
+                    _log(DRONE__ERROR, "Drone %s(%u): Failed to create ore item.", m_pDrone->GetName(), m_pDrone->GetID());
+                    return;
+                }
+        
+                ShipSE* pShip = m_pDrone->GetPilot()->GetShipSE();
+                InventoryItemRef shipRef = pShip->GetSelf();
+        
+                float remainingVolume = shipRef->GetRemainingVolumeByFlag(flagCargoHold);
+                if (remainingVolume < oreRef->volume()) {
+                    _log(DRONE__AI_TRACE, "Drone %s: Ship %s cargo is full. Dropping ore.",
+                        m_pDrone->GetName(), shipRef->GetName());
+                    oreRef->Delete();  // simulate ore being lost
+                    return;
+                }
+        
+                oreRef->Move(shipRef->itemID(), flagCargoHold, false);
+                shipRef->AddItem(oreRef);
+        
+                // Deplete asteroid
+                float roidQuantity = roidRef->GetAttribute(AttrQuantity).get_float();
+                roidQuantity -= oreAmount;
+        
+                if (roidQuantity <= 0.0f) {
+                    _log(DRONE__AI_TRACE, "Asteroid %s(%u) depleted by drone %s(%u).",
+                        roidRef->name(), roidRef->itemID(), m_pDrone->GetName(), m_pDrone->GetID());
+        
+                    m_pDrone->TargetMgr()->ClearTarget(m_target);
+                    m_pDrone->GetPilot()->SendNotifyMsg("%s deactivates as the asteroid has been depleted.", m_pDrone->GetName());
+        
+                    SystemEntity* deadRoid = m_target;
+                    m_target = nullptr;
+                    deadRoid->Delete();
+                    SetIdle();
+                    return;
+                }
+        
+                // Update remaining ore and radius
+                roidRef->SetAttribute(AttrQuantity, roidQuantity);
+                double newRadius = exp((roidQuantity + 112404.8) / 25000);
+                roidRef->SetAttribute(AttrRadius, newRadius);
+            }
         } break;
 
     //no default on purpose
