@@ -150,15 +150,19 @@ void DroneAIMgr::Process() {
                 }
         
                 ShipSE* pShip = m_pDrone->GetPilot()->GetShipSE();
-                InventoryItemRef shipRef = pShip->GetSelf();
-        
+                ShipItemRef shipRef = ShipItemRef::StaticCast(pShip->GetSelf());  // Cast to correct type
+                
                 float remainingVolume = shipRef->GetRemainingVolumeByFlag(flagCargoHold);
-                if (remainingVolume < oreRef->volume()) {
+                if (remainingVolume < oreRef->GetVolume()) {
                     _log(DRONE__AI_TRACE, "Drone %s: Ship %s cargo is full. Dropping ore.",
                         m_pDrone->GetName(), shipRef->GetName());
                     oreRef->Delete();  // simulate ore being lost
                     return;
                 }
+                
+                oreRef->Move(shipRef->itemID(), flagCargoHold, false);
+                shipRef->AddItem(oreRef);
+
         
                 oreRef->Move(shipRef->itemID(), flagCargoHold, false);
                 shipRef->AddItem(oreRef);
