@@ -18,6 +18,7 @@
 #include "system/SystemBubble.h"
 #include "inventory/ItemRef.h"
 #include "system/DestinyManager.h"
+#include "ship/ShipItem.h"
 
 DroneAIMgr::DroneAIMgr(DroneSE* who)
 : m_state(DroneAI::State::Idle),
