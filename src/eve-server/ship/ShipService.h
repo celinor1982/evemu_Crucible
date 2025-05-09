@@ -73,6 +73,12 @@ protected:
     PyResult BoardStoredShip(PyCallArgs& call, PyInt* structureID, PyInt* shipID);
     PyResult StoreVessel(PyCallArgs& call, PyInt* destID);
     PyResult SelfDestruct(PyCallArgs& call, PyInt* shipID);
+    PyResult CmdEngage(PyCallArgs& call, PyList* droneIDs);
+    PyResult CmdReturnBay(PyCallArgs& call, PyList* droneIDs);
+    PyResult CmdAbandonDrone(PyCallArgs& call, PyList* droneIDs);
+    PyResult CmdOrbit(PyCallArgs& call, PyList* droneIDs);
+    PyResult CmdMine(PyCallArgs& call, PyList* droneIDs);
+    PyResult CmdReturnAndOrbit(PyCallArgs& call, PyList* droneIDs);
 
 private:
     ShipItem* pShip;
