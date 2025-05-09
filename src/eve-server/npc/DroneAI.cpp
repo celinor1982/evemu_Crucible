@@ -122,6 +122,7 @@ void DroneAIMgr::Process() {
                 _log(DRONE__AI_TRACE, "Drone %s(%u): Mining asteroid %s(%u).",
                     m_pDrone->GetName(), m_pDrone->GetID(), m_target->GetName(), m_target->GetID());
     
+                // Send mining beam effect
                 m_pDrone->DestinyMgr()->SendSpecialEffect(
                     m_pDrone,
                     m_target,
@@ -129,6 +130,53 @@ void DroneAIMgr::Process() {
                     "miningEffect",
                     0, 0, 0, 0, 0
                 );
+    
+                // === Ore creation and delivery ===
+                InventoryItemRef roidRef(m_target->GetSelf());
+                float oreAmount = 1.0f;  // fixed yield per cycle (adjust as needed)
+                ItemData idata(roidRef->typeID(), m_pDrone->GetOwnerID(), locTemp, flagNone, oreAmount);
+                InventoryItemRef oreRef = sItemFactory.SpawnItem(idata);
+                if (!oreRef.get()) {
+                    _log(DRONE__AI_ERROR, "Drone %s(%u): Failed to create ore item.", m_pDrone->GetName(), m_pDrone->GetID());
+                    return;
+                }
+    
+                ShipSE* pShip = m_pDrone->GetPilot()->GetShipSE();
+                if (!pShip) {
+                    _log(DRONE__AI_ERROR, "Drone %s(%u): Owner ship not found.", m_pDrone->GetName(), m_pDrone->GetID());
+                    oreRef->Delete();
+                    return;
+                }
+    
+                if (!pShip->AddItemByFlag(flagCargoHold, oreRef)) {
+                    _log(DRONE__AI_TRACE, "Drone %s(%u): Ship cargo full. Ore not added.", m_pDrone->GetName(), m_pDrone->GetID());
+                    oreRef->Delete();
+                    m_pDrone->GetPilot()->SendNotifyMsg("%s disperses its ore because the cargo hold is full.", m_pDrone->GetName());
+                }
+    
+                // === Asteroid depletion ===
+                float roidQuantity = roidRef->GetAttribute(AttrQuantity).get_float();
+                roidQuantity -= oreAmount;
+    
+                if (roidQuantity <= 0.0f) {
+                    _log(DRONE__AI_TRACE, "Asteroid %s(%u) depleted by drone %s(%u).",
+                        roidRef->name(), roidRef->itemID(), m_pDrone->GetName(), m_pDrone->GetID());
+    
+                    m_pDrone->TargetMgr()->ClearTarget(m_target);
+                    m_pDrone->GetPilot()->SendNotifyMsg("%s deactivates as the asteroid has been depleted.", m_pDrone->GetName());
+    
+                    SystemEntity* deadRoid = m_target;
+                    m_target = nullptr;
+                    deadRoid->Delete();  // remove asteroid from space
+    
+                    SetIdle();  // drone returns to orbit
+                    return;
+                }
+    
+                // Still ore left - update quantity and radius
+                roidRef->SetAttribute(AttrQuantity, roidQuantity);
+                double newRadius = exp((roidQuantity + 112404.8) / 25000);
+                roidRef->SetAttribute(AttrRadius, newRadius);
             }
         } break;
       
