@@ -616,6 +616,7 @@ PyResult MarketProxyService::PlaceCharOrder(PyCallArgs &call, PyInt* stationID, 
             // take item from seller
             call.client->SystemMgr()->RemoveItemFromInventory(iRef);
             iRef->Delete();
+            iRef = nullptr;
         } else {
             //update the item.
             if (!iRef->AlterQuantity(-quantity->value(), true)) {
