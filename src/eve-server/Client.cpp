@@ -1712,9 +1712,17 @@ bool Client::IsHangarLoaded(uint32 hangarID) {
 }
 
 void Client::LoadStationHangar(uint32 stationID) {
-    _log(PLAYER__INFO, "Client::LoadStationHangar() is loading personal hangar for %s(%u) in stationID %u",  m_char->name(), m_char->itemID(), stationID);
+    _log(PLAYER__INFO, "Client::LoadStationHangar() is loading personal hangar for %s(%u) in stationID %u",
+        m_char->name(), m_char->itemID(), stationID);
+
     sItemFactory.SetUsingClient(this);
-    m_system->GetStationFromInventory(stationID)->GetMyInventory()->LoadContents();
+
+    Inventory* inv = m_system->GetStationFromInventory(stationID)->GetMyInventory();
+    if (inv)
+        inv->LoadContents();
+    else
+        _log(INV__ERROR, "Client::LoadStationHangar() - NULL Inventory for stationID %u", stationID);
+
     sItemFactory.UnsetUsingClient();
 }
 
