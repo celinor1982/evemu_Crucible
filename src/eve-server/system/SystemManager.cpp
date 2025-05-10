@@ -715,7 +715,11 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                         return nullptr;
                     /** @todo make error msg here */
                     WreckSE* wSE = new WreckSE(wreck, sysMgr.GetServiceMgr(), &sysMgr, data);
-                    wreck->GetMyInventory()->LoadContents();
+                    Inventory* inv = wreck->GetMyInventory();
+                    if (inv)
+                        inv->LoadContents();
+                    else
+                        _log(INV__ERROR, "SystemManager.cpp: GetMyInventory() returned null for wreck %u", wreck->itemID());
                     wreck->SetMySE(wSE);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WreckSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return wSE;
@@ -730,7 +734,11 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                         return nullptr;
                     /** @todo make error msg here */
                     ContainerSE* cSE = new ContainerSE(contRef, sysMgr.GetServiceMgr(), &sysMgr, data);
-                    contRef->GetMyInventory()->LoadContents();
+                    Inventory* inv = contRef->GetMyInventory();
+                    if (inv)
+                        inv->LoadContents();
+                    else
+                        _log(INV__ERROR, "SystemManager.cpp: GetMyInventory() returned null for container %u", contRef->itemID());
                     contRef->SetMySE(cSE);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return cSE;
@@ -814,7 +822,11 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
                     return nullptr;
                 /** @todo make error msg here */
                 ContainerSE* cSE = new ContainerSE(contRef, sysMgr.GetServiceMgr(), &sysMgr, data);
-                contRef->GetMyInventory()->LoadContents();
+                Inventory* inv = contRef->GetMyInventory();
+                if (inv)
+                    inv->LoadContents();
+                else
+                    _log(INV__ERROR, "SystemManager.cpp: GetMyInventory() returned null for container %u", contRef->itemID());
                 contRef->SetMySE(cSE);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return cSE;
