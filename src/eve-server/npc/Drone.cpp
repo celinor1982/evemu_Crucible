@@ -151,8 +151,8 @@ void DroneSE::Launch(ShipSE* pShipSE) {
 
     // Automatically set the drone to idle and orbit
     this->Online(pShipSE);           // Enables drone and assigns ship
-    this->IdleOrbit(pShipSE);        // Begin idle orbit immediately
     this->GetAI()->SetIdle();        // Set AI state to Idle
+    this->IdleOrbit(pShipSE);        // Begin idle orbit immediately
 }
 
 void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
