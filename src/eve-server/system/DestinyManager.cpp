@@ -225,7 +225,9 @@ void DestinyManager::ProcessState() {
             float dot = toVec.dotProduct(m_shipHeading);
             float degrees = EvE::Trig::Rad2Deg(std::acos(dot));
             // Dynamically scale grace window based on ship agility (in seconds)
-            float grace = std::clamp(m_shipAgility * 2.5f, 0.5f, 5.0f);
+            float agility_scaled = static_cast<float>(m_shipAgility) * 2.5f;
+            float grace = std::clamp(agility_scaled, 0.5f, 5.0f);
+
 
             if ((degrees < WARP_ALIGNMENT) and (m_timeFraction > 0.749)) {
                 m_shipHeading = toVec;
