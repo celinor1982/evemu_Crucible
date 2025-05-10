@@ -161,6 +161,7 @@ void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
         pShipSE = m_pShipSE;
 
     m_AI->AssignShip(pShipSE);
+    // Do not call IdleOrbit here - launch should handle that
 }
 
 void DroneSE::Offline() {
@@ -172,15 +173,13 @@ void DroneSE::Offline() {
 }
 
 void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
-    if (!m_online) // moved above and replaced return with statechange
-    StateChange();
-    
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
     else
-        m_pShipSE = pShipSE; // ensures persistence
+        m_pShipSE = pShipSE;
+    
     if (!m_online)
-        return;
+        return;        // error here?
 
     // TODO:  fix these speeds
     // set speed and begin orbit
