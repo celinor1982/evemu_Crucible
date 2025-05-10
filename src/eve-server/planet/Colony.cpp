@@ -951,6 +951,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     CargoContainerRef contRef = sItemFactory.SpawnCargoContainer(canData);
     if (contRef.get() == nullptr) {
         contRef->Delete();
+        contRef = nullptr;
         if (m_client->CanThrow())
             throw CustomError ("Unable to spawn item of type %u.", EVEDB::invTypes::PlanetaryLaunchContainer);
     }
