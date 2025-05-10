@@ -64,6 +64,7 @@ public:
     void SetUsingClient(Client *pClient)                { m_pClient = pClient; }
     void UnsetUsingClient()                             { m_pClient = nullptr; }
     void AddItem(InventoryItemRef iRef);
+    void SafeDeleteItem(uint32 itemID);
 
     Client* GetUsingClient()                            { return m_pClient; }
     // load=true will load the item and its container (recursively) into server, up to solarSystem
