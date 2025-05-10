@@ -172,11 +172,14 @@ void DroneSE::Offline() {
 }
 
 void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
+    if (!m_online) // moved above and replaced return with statechange
+    StateChange();
+    
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
+    else
+        m_pShipSE = pShipSE; // ensures persistence
 
-    if (!m_online)
-        return;         // error here?
 
     // TODO:  fix these speeds
     // set speed and begin orbit
