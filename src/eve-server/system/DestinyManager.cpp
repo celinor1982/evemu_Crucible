@@ -1740,7 +1740,13 @@ void DestinyManager::WarpUpdate(double currentShipSpeed) {
     //  this method is ~1000m off actual.  could be due to rounding.   -allan 9Jan15
     m_velocity = (m_warpState->warp_vector * currentShipSpeed);
     SetPosition(m_targetPoint - (m_warpState->warp_vector * m_targetDistance));
-
+    // Prevents overshooting warp point
+    double remaining = m_position.distance(m_targetPoint);
+    if (remaining < 100.0) {
+        WarpStop(currentShipSpeed);
+        return;
+    }
+    
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
         _log(
             DESTINY__WARP_TRACE,
@@ -1792,7 +1798,7 @@ void DestinyManager::WarpStop(double currentShipSpeed) {
         _log(AUTOPILOT__MESSAGE, "Destiny::WarpStop(): %s(%u) - Warp complete.", mySE->GetName(), mySE->GetID());
         mySE->GetPilot()->SetLoginWarpComplete();
     }
-    m_targetPoint += (m_warpState->warp_vector *10000);
+    // m_targetPoint += (m_warpState->warp_vector *10000); // Removed, this is causing ships to warp 10km beyond intended stopping point, causing the ships to flip 180 or bounce off objects.
     // SetSpeedFraction() checks for m_state = Warp and warpstate != null to set decel variables correctly with warp decel.
     //   have to call this BEFORE deleting or reseting m_state or WarpState.
     SetSpeedFraction(0.0f);
