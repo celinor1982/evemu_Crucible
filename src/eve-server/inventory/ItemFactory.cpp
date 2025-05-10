@@ -130,6 +130,17 @@ void ItemFactory::AddItem(InventoryItemRef iRef)
     m_items.emplace(iRef->itemID(), iRef);
 }
 
+void ItemFactory::SafeDeleteItem(uint32 itemID) {
+    InventoryItemRef itemRef = GetItemRef(itemID);
+    if (!itemRef) {
+        _log(ITEM__WARNING, "SafeDeleteItem: Could not find item %u", itemID);
+        return;
+    }
+
+    itemRef->Delete();      // clean up the item
+    RemoveItem(itemID);     // remove from factory's internal RefPtr map
+}
+
 void ItemFactory::RemoveItem(uint32 itemID)
 {
     m_items.erase(itemID);
