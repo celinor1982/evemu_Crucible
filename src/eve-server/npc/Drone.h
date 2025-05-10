@@ -136,5 +136,3 @@ private:
 };
 
 #endif /* !__DRONE__H__INCL__ */
-
-
