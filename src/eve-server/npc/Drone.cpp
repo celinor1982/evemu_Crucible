@@ -179,7 +179,8 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
         pShipSE = m_pShipSE;
     else
         m_pShipSE = pShipSE; // ensures persistence
-
+    if (!m_online)
+        return;
 
     // TODO:  fix these speeds
     // set speed and begin orbit
