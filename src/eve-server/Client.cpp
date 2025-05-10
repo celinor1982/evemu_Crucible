@@ -468,6 +468,7 @@ void Client::ProcessClient() {
                 case Player::State::Undock: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Undock");
                     pShipSE->DestinyMgr()->Undock(m_movePoint);
+                    m_dockCooldownTimer.Start(3000);  // 3 seconds to prevent immediate re-dock
                     SetBallPark();
                     m_clientState = Player::State::Idle;
                 } break;
