@@ -302,7 +302,7 @@ void ContainerSE::Process() {
         m_deleteTimer.Disable();
         sLog.Magenta( "ContainerSE::Process()", "Garbage Collection is removing Cargo Container %u.", m_contRef->itemID() );
         m_contRef->Delete();
-        delete this;
+        sItemFactory.RemoveItem(this->itemID());
     }
 }
 
@@ -500,7 +500,7 @@ void WreckSE::Process() {
         m_deleteTimer.Disable();
         sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", m_contRef->itemID() );
         Delete();
-        delete this;
+        sItemFactory.RemoveItem(this->itemID());
     }
 }
 
