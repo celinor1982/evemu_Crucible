@@ -74,7 +74,9 @@ CargoContainerRef CargoContainer::Spawn( ItemData &data) {
     uint32 containerID = CargoContainer::CreateItemID(data );
     if (containerID == 0 )
         return CargoContainerRef(nullptr);
-    CargoContainerRef containerRef = CargoContainer::Load(containerID );
+    CargoContainerRef containerRef = CargoContainer::Load(containerID);
+    if (!containerRef)
+        return CargoContainerRef(nullptr);  // Prevent null deref if loading fails
 
     // Create default dynamic attributes in the AttributeMap:
     containerRef->SetAttribute(AttrRadius,        containerRef->type().radius(), false);			// Radius
