@@ -148,6 +148,11 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     m_system->AddEntity(this);
 
     assert (m_bubble != nullptr);
+
+    // Automatically set the drone to idle and orbit
+    this->Online(pShipSE);           // Enables drone and assigns ship
+    this->IdleOrbit(pShipSE);        // Begin idle orbit immediately
+    this->GetAI()->SetIdle();        // Set AI state to Idle
 }
 
 void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
@@ -158,6 +163,7 @@ void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
         pShipSE = m_pShipSE;
 
     m_AI->AssignShip(pShipSE);
+    // Do not call IdleOrbit here — launch should handle that
 }
 
 void DroneSE::Offline() {
