@@ -74,8 +74,11 @@ void DroneAIMgr::Process() {
             // check everything in this state.   return to ship?
         } break;
         case DroneAI::State::Idle: {
-            // orbiting controlling ship
-        } break;
+            if (!m_pDrone->DestinyMgr()->IsOrbiting()) {
+                m_pDrone->IdleOrbit(m_assignedShip);
+            }
+        }
+        break;
         case DroneAI::State::Engaged: {
             //NOTE: getting our pTarget like this is pretty weak...
             SystemEntity* pTarget = m_pDrone->TargetMgr()->GetFirstTarget(true);
