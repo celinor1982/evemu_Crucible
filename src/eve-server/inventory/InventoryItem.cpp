@@ -154,6 +154,8 @@ InventoryItemRef InventoryItem::SpawnItem(uint32 itemID, const ItemData &data)
     InventoryItemRef iRef = InventoryItemRef(new InventoryItem(itemID, *iType, data));
     if (iRef.get() != nullptr)
         iRef->_Load();
+    if (iRef.get() != nullptr && iRef->GetMyInventory() == nullptr)
+        iRef->pInventory = new Inventory(iRef);
 
     return iRef;
 }
@@ -393,7 +395,13 @@ InventoryItemRef InventoryItem::SpawnTemp(ItemData& data)
     if (iType->groupID() == EVEDB::invGroups::Cargo_Container)
         return CargoContainer::SpawnTemp(data);
 
-    return InventoryItem::SpawnItem(InventoryItem::CreateTempItemID(data), data);
+    InventoryItemRef itemRef = InventoryItem::SpawnItem(InventoryItem::CreateTempItemID(data), data);
+    if (itemRef.get() == nullptr)
+        return InventoryItemRef(nullptr);
+    if (itemRef->GetMyInventory() == nullptr)
+        itemRef->pInventory = new Inventory(itemRef);
+    return itemRef;
+
 }
 
 // called from generic SpawnItem()
@@ -429,7 +437,12 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             _log(ITEM__WARNING, "II::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID(data);
-            return InventoryItem::SpawnItem(itemID, data);
+            InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
+            if (itemRef.get() == nullptr)
+                return InventoryItemRef(nullptr);
+            if (itemRef->GetMyInventory() == nullptr)
+                itemRef->pInventory = new Inventory(itemRef);
+            return itemRef;
         } break;
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure:
@@ -457,14 +470,24 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
                 case EVEDB::invGroups::Control_Bunker:
                 case EVEDB::invGroups::Capture_Point: {
                     uint32 itemID = InventoryItem::CreateItemID(data);
-                    return InventoryItem::SpawnItem(itemID, data);
+                    InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
+                    if (itemRef.get() == nullptr)
+                        return InventoryItemRef(nullptr);
+                    if (itemRef->GetMyInventory() == nullptr)
+                        itemRef->pInventory = new Inventory(itemRef);
+                    return itemRef;
                 } break;
                 case EVEDB::invGroups::Sentry_Gun:      // these are not saved
                 case EVEDB::invGroups::Temporary_Cloud:
                 default: {  // *should*  be all npcs
                     // use temp items and NOT save to db.
                     uint32 itemID = InventoryItem::CreateTempItemID(data);
-                    return InventoryItem::SpawnItem(itemID, data);
+                    InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
+                    if (itemRef.get() == nullptr)
+                        return InventoryItemRef(nullptr);
+                    if (itemRef->GetMyInventory() == nullptr)
+                        itemRef->pInventory = new Inventory(itemRef);
+                    return itemRef;
                 } break;
             }
         } break;
@@ -483,6 +506,8 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
             if (itemRef.get() == nullptr)
                 return InventoryItemRef(nullptr);
+            if (itemRef->GetMyInventory() == nullptr)
+                itemRef->pInventory = new Inventory(itemRef);
             // THESE SHOULD BE MOVED INTO A _type::Spawn() function that does not exist yet
             itemRef->SetAttribute(AttrMass,           iType->mass(), false);           // Mass
             itemRef->SetAttribute(AttrRadius,         iType->radius(), false);       // Radius
@@ -498,6 +523,8 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
                     // Spawn launched missile item in MISSILE_ID range and does NOT save missile to db
                     itemID = InventoryItem::CreateTempItemID(data);
                     itemRef = InventoryItem::SpawnItem(itemID, data);
+                    if (itemRef->GetMyInventory() == nullptr)
+                        itemRef->pInventory = new Inventory(itemRef);
                 } break;
                 default: {
                     switch (iType->groupID()) {
@@ -514,7 +541,10 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
                         default: {
                             // create generic item for other charge types
                             itemID = InventoryItem::CreateItemID(data);
-                            itemRef = InventoryItem::SpawnItem(itemID, data);
+                            InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
+                            if (itemRef->GetMyInventory() == nullptr)
+                                itemRef->pInventory = new Inventory(itemRef);
+                            return itemRef;
                         } break;
                     }
                 }
@@ -540,7 +570,10 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             } else if (iType->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in TEMP_ENTITY_ID range and does NOT save Force_Field to db
                 uint32 itemID = InventoryItem::CreateTempItemID(data);
-                return InventoryItem::SpawnItem(itemID, data);
+                InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
+                if (itemRef->GetMyInventory() == nullptr)
+                    itemRef->pInventory = new Inventory(itemRef);
+                return itemRef;
             } else {
                 // Spawn new Celestial Object
                 return CelestialObject::Spawn(data);
