@@ -74,11 +74,8 @@ void DroneAIMgr::Process() {
             // check everything in this state.   return to ship?
         } break;
         case DroneAI::State::Idle: {
-            if (!m_pDrone->DestinyMgr()->IsOrbiting()) {
-                m_pDrone->IdleOrbit(m_assignedShip);
-            }
-        }
-        break;
+            // orbiting controlling ship
+        } break;
         case DroneAI::State::Engaged: {
             //NOTE: getting our pTarget like this is pretty weak...
             SystemEntity* pTarget = m_pDrone->TargetMgr()->GetFirstTarget(true);
@@ -157,10 +154,7 @@ void DroneAIMgr::SetIdle() {
     m_warpScramblerTimer.Disable();
 
     // orbit assigned ship
-    if (m_assignedShip != nullptr)
-        _log(DRONE__AI_TRACE, "IdleOrbit(): m_online=%s, m_assignedShip=%p", 
-             m_pDrone->IsEnabled() ? "true" : "false", m_assignedShip);
-        m_pDrone->IdleOrbit(m_assignedShip);
+    m_pDrone->IdleOrbit(m_assignedShip);
 }
 
 void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
