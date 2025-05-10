@@ -245,7 +245,7 @@ public:
     bool IsBubbleWait()                                 { return m_bubbleWait; }
     bool IsSetStateSent()                               { return m_setStateSent; }
     bool IsSessionChange()                              { return m_sessionChangeActive; }
-    bool IsDockCooldownActive() const { return m_dockCooldownTimer.Enabled() && !m_dockCooldownTimer.Check(); }
+    bool IsDockCooldownActive() const { return m_dockCooldownTimer.Enabled() && !m_dockCooldownTimer.Check(false); }
     bool IsLoginWarping();
     uint32 GetSessionChangeTime()                       { return m_sessionTimer.GetRemainingTime() / 1000; }
 
