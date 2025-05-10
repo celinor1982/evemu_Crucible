@@ -637,6 +637,7 @@ void InventoryItem::ToVirtual(uint32 locationID)
     }
     if (pAttributeMap != nullptr)   // should never be null, but just in case
         pAttributeMap->Delete();
+        pAttributeMap = nullptr;
 
     //notify about the changes.
     std::map<int32, PyRep *> changes;
