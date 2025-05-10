@@ -231,7 +231,7 @@ void DestinyManager::ProcessState() {
                 return;
             } else if (m_timeFraction < 0.749 && m_userSpeedFraction < 0.7499) {
                 SetSpeedFraction(1.0f, true);
-            } else if ((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp + 0.3) &&
+            } else if (((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp + 0.3) &&
                        (degrees > WARP_ALIGNMENT || m_timeFraction < 0.749)) {
                 if (mySE->HasPilot()) {
                     _log(DESTINY__WARNING, "Warp Debug - Align: %.2f°, TimeFraction: %.3f, UserSpeedFraction: %.3f", 
