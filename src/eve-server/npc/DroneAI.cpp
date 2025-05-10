@@ -16,8 +16,6 @@
 #include "npc/DroneAI.h"
 #include "system/Damage.h"
 #include "system/SystemBubble.h"
-#include "inventory/ItemRef.h"
-#include "system/DestinyManager.h"
 
 DroneAIMgr::DroneAIMgr(DroneSE* who)
 : m_state(DroneAI::State::Idle),
@@ -76,24 +74,7 @@ void DroneAIMgr::Process() {
             // check everything in this state.   return to ship?
         } break;
         case DroneAI::State::Idle: {
-            if (!m_pDrone->IsOnline())
-                return;
-        
-            SystemEntity* controller = m_pDrone->GetControllerSE();
-            if (!controller) {
-                _log(DRONE__AI_TRACE, "Drone %u: No controller found. Returning to ship.", m_pDrone->GetID());
-                SetState(DroneAI::State::Departing);
-                return;
-            }
-        
-            double dist = m_pDrone->DistanceTo2(controller);
-            if (dist > 1000.0) {
-                // Approach the controller slowly
-                m_pDrone->DestinyMgr()->SetApproach(controller, 250.0);
-            } else {
-                // Stay in position or orbit
-                m_pDrone->DestinyMgr()->Orbit(controller, 500.0);
-            }
+            // orbiting controlling ship
         } break;
         case DroneAI::State::Engaged: {
             //NOTE: getting our pTarget like this is pretty weak...
@@ -124,58 +105,11 @@ void DroneAIMgr::Process() {
         case DroneAI::State::Guarding:
         case DroneAI::State::Assisting:
         case DroneAI::State::Combat:
-        case DroneAI::State::Mining: {
-            if (!m_target || !m_target->IsAsteroidSE()) {
-                _log(DRONE__AI_TRACE, "Drone %u: Invalid or missing asteroid target.", m_pDrone->GetID());
-                SetState(DroneAI::State::Idle);
-                return;
-            }
-        
-            if (!m_mainAttackTimer.Enabled())
-                m_mainAttackTimer.Start(4000);  // 4s mining cycle
-        
-            if (!m_mainAttackTimer.Check())
-                return;
-        
-            InventoryItemRef roidRef(m_target->GetSelf());
-            float oreAmount = 1.0f;
-        
-            ItemData idata(roidRef->typeID(), m_pDrone->GetOwnerID(), locTemp, flagNone, oreAmount);
-            InventoryItemRef oreRef = sItemFactory.SpawnItem(idata);
-        
-            if (!oreRef) {
-                _log(DRONE__AI_ERROR, "Drone %u: Failed to create ore item.", m_pDrone->GetID());
-                return;
-            }
-        
-            ShipSE* pShip = m_pDrone->GetPilot()->GetShipSE();
-            ShipItemRef shipRef = ShipItemRef::StaticCast(pShip->GetSelf());
-            float remainingVolume = shipRef->GetRemainingVolumeByFlag(flagCargoHold);
-        
-            if (remainingVolume < oreRef->GetVolume()) {
-                _log(DRONE__AI_TRACE, "Drone %u: Cargo full. Dropping ore.", m_pDrone->GetID());
-                oreRef->Delete();
-                return;
-            }
-        
-            oreRef->Move(shipRef->itemID(), flagCargoHold, false);
-            shipRef->AddItem(oreRef);
-        
-            float roidQuantity = roidRef->GetAttribute(AttrQuantity).get_float();
-            roidQuantity -= oreAmount;
-        
-            if (roidQuantity <= 0.0f) {
-                m_pDrone->TargetMgr()->ClearTarget(m_target);
-                SystemEntity* deadRoid = m_target;
-                m_target = nullptr;
-                deadRoid->Delete();
-                SetState(DroneAI::State::Idle);
-                return;
-            }
-        
-            roidRef->SetAttribute(AttrQuantity, roidQuantity);
-            double newRadius = exp((roidQuantity + 112404.8) / 25000);
-            roidRef->SetAttribute(AttrRadius, newRadius);
+        case DroneAI::State::Mining:
+        case DroneAI::State::Approaching:
+        case DroneAI::State::Departing2:
+        case DroneAI::State::Pursuit: {
+           // do nothing here yet
         } break;
 
     //no default on purpose
@@ -276,30 +210,22 @@ void DroneAIMgr::ClearAllTargets() {
 
 void DroneAIMgr::Target(SystemEntity* pTarget) {
     bool chase = false;
-    if (!m_pDrone->TargetMgr()->StartTargeting(
-            pTarget,
-            m_pDrone->GetSelf()->GetAttribute(AttrScanSpeed).get_uint32(),
-            (uint8)m_pDrone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(),
-            m_entityAttackRange,
-            chase)) {
+    if (!m_pDrone->TargetMgr()->StartTargeting(pTarget, m_pDrone->GetSelf()->GetAttribute(AttrScanSpeed).get_uint32(), (uint8)m_pDrone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange, chase)) {
         _log(DRONE__AI_TRACE, "Drone %s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
              m_pDrone->GetName(), m_pDrone->GetID(), pTarget->GetName(), pTarget->GetID());
+        //ClearAllTargets();
         SetIdle();
         return;
     }
-
-    // Enable mining state if the target is an asteroid
-    if (pTarget->GetCategoryID() == EVEDB::invCategories::Asteroid) {
-        m_target = pTarget;
-        m_state = DroneAI::State::Mining;
-        _log(DRONE__AI_TRACE, "Drone %s(%u): Target is asteroid %s(%u), switching to Mining state.",
-            m_pDrone->GetName(), m_pDrone->GetID(), pTarget->GetName(), pTarget->GetID());
-        return;
-    }
-
-    // Otherwise, proceed as normal
     m_beginFindTarget.Disable();
     CheckDistance(pTarget);
+
+    /*
+    std::map<std::string, PyRep *> arg;
+    arg["target"] = new PyInt(args.arg);
+    throw PyException(MakeUserError("DeniedDroneTargetForceField", arg));
+    */
+ //DeniedDroneTargetForceField
 }
 
 void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
