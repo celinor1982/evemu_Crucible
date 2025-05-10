@@ -141,16 +141,13 @@ void DroneSE::RemoveDrone() {
 
 void DroneSE::Launch(ShipSE* pShipSE) {
     m_pShipSE = pShipSE;
+
     m_controllerID = pShipSE->GetID();
     m_controllerOwnerID = pShipSE->GetOwnerID();
 
     m_system->AddEntity(this);
-    assert (m_bubble != nullptr);
 
-    // Automatically set the drone to idle and orbit
-    this->Online(pShipSE);           // Enables drone and assigns ship
-    this->IdleOrbit(pShipSE);        // Begin idle orbit immediately
-    this->GetAI()->SetIdle();        // Set AI state to Idle
+    assert (m_bubble != nullptr);
 }
 
 void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
@@ -161,7 +158,6 @@ void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
         pShipSE = m_pShipSE;
 
     m_AI->AssignShip(pShipSE);
-    // Do not call IdleOrbit here - launch should handle that
 }
 
 void DroneSE::Offline() {
@@ -175,11 +171,9 @@ void DroneSE::Offline() {
 void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
-    else
-        m_pShipSE = pShipSE;
-    
+
     if (!m_online)
-        return;        // error here?
+        return;         // error here?
 
     // TODO:  fix these speeds
     // set speed and begin orbit
