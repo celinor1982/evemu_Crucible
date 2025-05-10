@@ -173,6 +173,8 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
         pShipSE = m_pShipSE;
 
     if (!m_online)
+        _log(DRONE__AI_TRACE, "IdleOrbit() aborted: m_online is false for drone %s(%u).",
+             m_self->name(), m_self->itemID());
         return;         // error here?
 
     // TODO:  fix these speeds
