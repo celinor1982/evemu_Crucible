@@ -350,6 +350,7 @@ void Colony::AbandonColony()
     }
     InventoryItemRef iRef = sItemFactory.GetItemRef(m_colonyID);
     iRef->Delete();
+    iRef = nullptr;
     m_db.DeleteColony(m_colonyID, m_pSE->GetID(), m_client->GetCharacterID());
     SafeDelete(ccPin);
     ccPin = new PI_CCPin();
