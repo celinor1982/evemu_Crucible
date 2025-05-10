@@ -279,8 +279,7 @@ public:
         difference_type operator-( const const_iterator< T >& oth ) const {
             return const_iterator< T >::operator-( oth );
         }
-    };  
-};
+    };
 
     /**
      * @brief Creates buffer of given length.
