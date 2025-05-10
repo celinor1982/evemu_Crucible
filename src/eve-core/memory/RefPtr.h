@@ -236,7 +236,13 @@ public:
     /**
      * @return True if stores a reference, false otherwise.
      */
-    operator bool() const { return (mPtr != nullptr); }
+    operator bool() const {
+        if (this == nullptr) {                        // Comment Line 240-243 if debugging is not needed.
+            fprintf(stderr, "[RefPtr::operator bool] ERROR: 'this' is nullptr! Possibly corrupted RefPtr.\n");
+            return false;
+        }
+        return m_ptr != nullptr;
+    }
 
     X& operator*() const { assert(*this); return *mPtr; }
     X* operator->() const { assert(*this); return mPtr; }
