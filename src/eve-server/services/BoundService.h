@@ -279,8 +279,8 @@ public:
 
         if (this->mClients.size () == 0) {
             this->GetParent ().BoundReleased (reinterpret_cast <Bound*> (this));
-            delete this; // we hate this
-            return true;
+            delete this; // we hate this // Safe self-deletion: Bound service is not RefPtr-managed.
+            return true; 
         }
 
         return false;
