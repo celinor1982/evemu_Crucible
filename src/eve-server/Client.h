@@ -392,6 +392,7 @@ protected:
     Timer m_pingTimer;
     Timer m_scanTimer;       // used to delay scan results based on skills, items, and other shit
     Timer m_cloakTimer;      // used for tracking jump cloak
+    Timer m_dockCooldownTimer;  // Prevents premature docking after undock
     Timer m_uncloakTimer;    // used for tracking ship actions after cloak module deactivated
     Timer m_invulTimer;
     Timer m_fleetTimer;      // used to apply fleet boost on undock and jump when applicable
