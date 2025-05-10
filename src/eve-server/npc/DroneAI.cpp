@@ -157,7 +157,10 @@ void DroneAIMgr::SetIdle() {
     m_warpScramblerTimer.Disable();
 
     // orbit assigned ship
-    m_pDrone->IdleOrbit(m_assignedShip);
+    if (m_assignedShip != nullptr)
+        _log(DRONE__AI_TRACE, "IdleOrbit(): m_online=%s, m_assignedShip=%p", 
+             m_pDrone->IsEnabled() ? "true" : "false", m_assignedShip);
+        m_pDrone->IdleOrbit(m_assignedShip);
 }
 
 void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
