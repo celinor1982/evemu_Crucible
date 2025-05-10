@@ -227,7 +227,7 @@ public:
         iterator< T2 > As() const { return iterator< T2 >( this->mBuffer, this->mIndex ); }
 
         /// Dereference operator.
-        reference operator*() const { return const_cast< reference >( **static_cast<const_iterator< T >*>( this ) ); }
+        reference operator*() const { return const_cast<reference>(const_iterator<T>::operator*());
         /// Dereference operator.
         pointer operator->() const { return &**this; }
         /// Subscript operator.
