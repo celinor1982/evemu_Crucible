@@ -2382,8 +2382,7 @@ PyResult DestinyManager::AttemptDockOperation() {
     uint32 stationID = pClient->GetDockStationID();
     SystemEntity *station = mySE->SystemMgr()->GetSE(stationID);
 
-    if (mySE->HasPilot() && mySE->GetPilot()->m_dockCooldownTimer.Enabled() &&
-        !mySE->GetPilot()->m_dockCooldownTimer.Check()) {
+    if (mySE->HasPilot() && mySE->GetPilot()->IsDockCooldownActive()) {
         _log(DESTINY__WARNING, "Dock attempt rejected: cooldown active for %s", mySE->GetName());
         mySE->GetPilot()->SendNotifyMsg("You cannot dock yet. Please wait a moment after undocking.");
         return nullptr;
