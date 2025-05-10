@@ -626,6 +626,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
 
     for (auto cur : delVec)
         cur->Delete();
+        cur = nullptr;
 }
 
 float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
