@@ -48,6 +48,9 @@ public:
 
     void Process();
 
+    void ProcessMiningState();
+    void ProcessIdleState();
+
     void Target(SystemEntity *by_who);
     void Targeted(SystemEntity *by_who);
     void TargetLost(SystemEntity *by_who);
