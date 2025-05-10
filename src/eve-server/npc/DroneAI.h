@@ -87,7 +87,6 @@ private:
     uint32 m_shieldBoosterDuration;
 
     DroneSE* m_pDrone;
-        SystemEntity* m_target = nullptr;
     ShipSE* m_assignedShip;
 
     TurretFormulas m_formula;
