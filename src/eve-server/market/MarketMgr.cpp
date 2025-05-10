@@ -421,6 +421,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     // the above calculations.
     if (shouldDeleteItem) {
         iRef->Delete();
+        iRef = nullptr;
     }
 
     // make sure the user has permissions to take money from the corporation account
