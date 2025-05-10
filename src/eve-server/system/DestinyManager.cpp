@@ -2382,6 +2382,20 @@ PyResult DestinyManager::AttemptDockOperation() {
     uint32 stationID = pClient->GetDockStationID();
     SystemEntity *station = mySE->SystemMgr()->GetSE(stationID);
 
+    if (mySE->HasPilot() && mySE->GetPilot()->m_dockCooldownTimer.Enabled() &&
+        !mySE->GetPilot()->m_dockCooldownTimer.Check()) {
+        _log(DESTINY__WARNING, "Dock attempt rejected: cooldown active for %s", mySE->GetName());
+        mySE->GetPilot()->SendNotifyMsg("You cannot dock yet. Please wait a moment after undocking.");
+        return nullptr;
+    }    
+
+    if (mySE->SysBubble() == nullptr) {
+        _log(DESTINY__ERROR, "AttemptDockOperation failed: %s has no bubble.", mySE->GetName());
+        if (mySE->HasPilot())
+            mySE->GetPilot()->SendNotifyMsg("Unable to dock: system not ready. Try again shortly.");
+        return nullptr;
+    }
+
     if (station == nullptr) {
         codelog(CLIENT__ERROR, "%s: Station %u not found.", pClient->GetName(), stationID);
         pClient->SendErrorMsg("Station Not Found, Docking Aborted.");
