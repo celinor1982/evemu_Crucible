@@ -224,6 +224,8 @@ void DestinyManager::ProcessState() {
             toVec.normalize();
             float dot = toVec.dotProduct(m_shipHeading);
             float degrees = EvE::Trig::Rad2Deg(std::acos(dot));
+            // Dynamically scale grace window based on ship agility (in seconds)
+            float grace = std::clamp(m_shipAgility * 2.5f, 0.5f, 5.0f);
 
             if ((degrees < WARP_ALIGNMENT) and (m_timeFraction > 0.749)) {
                 m_shipHeading = toVec;
@@ -231,7 +233,7 @@ void DestinyManager::ProcessState() {
                 return;
             } else if (m_timeFraction < 0.749 && m_userSpeedFraction < 0.7499) {
                 SetSpeedFraction(1.0f, true);
-            } else if (((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp + 0.3) &&
+            } else if (((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp + grace) &&
                        (degrees > WARP_ALIGNMENT || m_timeFraction < 0.749)) {
                 if (mySE->HasPilot()) {
                     _log(DESTINY__WARNING, "Warp Debug - Align: %.2f°, TimeFraction: %.3f, UserSpeedFraction: %.3f", 
