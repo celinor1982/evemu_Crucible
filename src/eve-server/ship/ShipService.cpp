@@ -131,7 +131,12 @@ PyResult ShipBound::Board(PyCallArgs &call, PyInt* newShipID, std::optional<PyIn
     }
 
     // this will segfault if newShipID is invalid or not in system inventory
-    pShipSE = pSystem->GetSE(newShipID->value())->GetShipSE();
+    SystemEntity* se = pSystem->GetSE(newShipID->value());
+    if (se == nullptr || se->GetShipSE() == nullptr) {
+        _log(SHIP__ERROR, "Board() failed: invalid SystemEntity or missing ShipSE for shipID %u", newShipID->value());
+        throw CustomError("Something bad happened as you prepared to board the ship. Ref: ServerError 25107.");
+    }
+    pShipSE = se->GetShipSE();
 
     if (pShipSE == nullptr) {
         _log(SHIP__ERROR, "Handle_Board() - Failed to get new ship %u for %s.", newShipID->value(), pClient->GetName());
