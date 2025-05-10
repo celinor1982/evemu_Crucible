@@ -23,6 +23,10 @@
 */
 
 #include "eve-server.h"
+
+
+
+
 #include "EVEServerConfig.h"
 #include "npc/Drone.h"
 #include "planet/CustomsOffice.h"
@@ -88,12 +92,6 @@ ShipBound::ShipBound (EVEServiceManager& mgr, ShipService& parent, ShipItem* shi
     this->Add("Drop", &ShipBound::Drop);
     this->Add("Scoop", &ShipBound::Scoop);
     this->Add("ScoopDrone", &ShipBound::ScoopDrone);
-    this->Add("CmdEngage", &ShipBound::CmdEngage);
-    this->Add("CmdReturnBay", &ShipBound::CmdReturnBay);
-    this->Add("CmdAbandonDrone", &ShipBound::CmdAbandonDrone);
-    this->Add("CmdOrbit", &ShipBound::CmdOrbit);
-    this->Add("CmdMine", &ShipBound::CmdMine);
-    this->Add("CmdReturnAndOrbit", &ShipBound::CmdReturnAndOrbit);
     this->Add("ScoopToSMA", &ShipBound::ScoopToSMA);
     this->Add("LaunchFromContainer", &ShipBound::LaunchFromContainer);
     this->Add("Jettison", &ShipBound::Jettison);
@@ -836,103 +834,6 @@ PyResult ShipBound::ScoopDrone(PyCallArgs &call, PyList* itemIDs) {
 
     /** @todo complete error msgs here */
     // returns error on error else mtDict
-    return PyStatic.mtDict();
-}
-
-PyResult ShipBound::CmdEngage(PyCallArgs &call, PyList* droneIDs) {
-    Client* pClient = call.client;
-    SystemEntity* target = pClient->GetShipSE()->TargetMgr()->GetFirstTarget();
-    if (!target)
-        throw CustomError("No valid target locked to engage.");
-
-    for (PyRep* rep : droneIDs->items) {
-        uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
-        DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
-        if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
-            drone->SetTarget(target);
-            drone->GetAI()->Target(target);
-        }
-    }
-    return PyStatic.mtDict();
-}
-
-PyResult ShipBound::CmdReturnBay(PyCallArgs &call, PyList* droneIDs) {
-    Client* pClient = call.client;
-
-    for (PyRep* rep : droneIDs->items) {
-        uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
-        DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
-        if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
-            drone->GetAI()->Return();  // Changes state to return-to-ship
-        }
-    }
-    return PyStatic.mtDict();
-}
-
-PyResult ShipBound::CmdAbandonDrone(PyCallArgs &call, PyList* droneIDs) {
-    Client* pClient = call.client;
-
-    for (PyRep* rep : droneIDs->items) {
-        uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
-        DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
-        if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
-            drone->Abandon();  // Clears ownership/controller and stops AI
-        }
-    }
-    return PyStatic.mtDict();
-}
-
-PyResult ShipBound::CmdOrbit(PyCallArgs &call, PyList* droneIDs) {
-    Client* pClient = call.client;
-    ShipSE* ship = pClient->GetShipSE();
-
-    for (PyRep* rep : droneIDs->items) {
-        uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
-        DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
-        if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
-            drone->IdleOrbit(ship);
-        }
-    }
-    return PyStatic.mtDict();
-}
-
-PyResult ShipBound::CmdMine(PyCallArgs &call, PyList* droneIDs) {
-    Client* pClient = call.client;
-    SystemEntity* target = pClient->GetShipSE()->TargetMgr()->GetFirstTarget();
-
-    if (!target || !target->IsAsteroidSE())
-        throw CustomError("Target is not a valid asteroid for mining.");
-
-    for (PyRep* rep : droneIDs->items) {
-        uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
-        DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
-        if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
-            drone->SetTarget(target);
-            drone->GetAI()->Target(target);
-            // Optional: set mining state explicitly
-        }
-    }
-    return PyStatic.mtDict();
-}
-
-PyResult ShipBound::CmdReturnAndOrbit(PyCallArgs &call, PyList* droneIDs) {
-    Client* pClient = call.client;
-    ShipSE* ship = pClient->GetShipSE();
-
-    for (PyRep* rep : droneIDs->items) {
-        uint32 droneID = rep->AsInt()->value();
-        SystemEntity* se = call.client->SystemMgr()->GetSE(droneID);
-        DroneSE* drone = (se && se->IsDroneSE()) ? se->GetDroneSE() : nullptr;
-        if (drone && drone->IsEnabled() && drone->GetOwner() == pClient) {
-            drone->GetAI()->Return();
-            drone->IdleOrbit(ship);
-        }
-    }
     return PyStatic.mtDict();
 }
 
