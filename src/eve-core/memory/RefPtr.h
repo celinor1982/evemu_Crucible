@@ -236,7 +236,7 @@ public:
     /**
      * @return True if stores a reference, false otherwise.
      */
-    operator bool() const {
+    operator bool() const noexcept {
         if (this == nullptr) {                        // Comment Line 240-243 if debugging is not needed.
             fprintf(stderr, "[RefPtr::operator bool] ERROR: 'this' is nullptr! Possibly corrupted RefPtr.\n");
             return false;
