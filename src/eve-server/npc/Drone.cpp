@@ -141,7 +141,7 @@ void DroneSE::RemoveDrone() {
     // this seems to work properly
     m_self->Delete(); // delete inventory item
     sItemFactory.RemoveItem(this->GetSelf()->itemID()); // unregister from itemfactory
-    m_self = DroneItemRef(); // null it out to prevent future use
+    m_self = InventoryItemRef(); // null it out to prevent future use
     m_killed = true; // mark for entity cleanup
 }
 
