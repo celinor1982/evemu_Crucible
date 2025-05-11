@@ -81,7 +81,7 @@ AnomalyMgr::~AnomalyMgr()
         if (iRef.get() == nullptr)
             continue;
         iRef->Delete();
-        iRef = nullptr;
+        iRef = InventoryItemRef();
     }
     */
 }
