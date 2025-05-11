@@ -137,6 +137,7 @@ void DroneSE::RemoveDrone() {
     // this seems to work properly
     m_self->Delete();
     sItemFactory.RemoveItem(this->GetSelf()->itemID());
+    m_killed = true;
 }
 
 void DroneSE::Launch(ShipSE* pShipSE) {
