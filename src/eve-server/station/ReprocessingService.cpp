@@ -256,7 +256,7 @@ PyResult ReprocessingServiceBound::Reprocess(PyCallArgs &call, PyList* itemIDs, 
             iRef->Move(iRef->locationID(), flagJunkyardReprocessed, true);
             m_stationRef->RemoveItem(iRef);
             iRef->Delete();
-            iRef = nullptr;
+            iRef = InventoryItemRef();
         }
     }
 
