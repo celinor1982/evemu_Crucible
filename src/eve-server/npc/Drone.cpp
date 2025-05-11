@@ -175,6 +175,18 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     // Automatically set the drone to idle and orbit
     this->Online(pShipSE);           // Enables drone and assigns ship
     this->GetAI()->SetIdle();        // Set AI state to Idle
+
+    // Safety fallback for missing attributes
+    if (m_self->GetAttribute(AttrMass).get_float() <= 0.0f)
+        m_self->SetAttribute(AttrMass, 100.0f, false);
+    if (m_self->GetAttribute(AttrRadius).get_float() <= 0.0f)
+        m_self->SetAttribute(AttrRadius, 5.0f, false);
+    if (m_self->GetAttribute(AttrOrbitRange).get_float() <= 0.0f)
+        m_self->SetAttribute(AttrOrbitRange, 1000.0f, false);
+    
+    // Re-sync Destiny vars now that attributes are safe
+    m_destiny->UpdateShipVariables();
+    
     this->IdleOrbit(pShipSE);        // Begin idle orbit immediately
 }
 
