@@ -12,29 +12,26 @@
 #define EVE_VECTOR_UTILS_H
 
 #include "math/gpoint.h"
-#include "math/Vector3D.h"
 #include "utils/misc.h"  // For MakeRandomFloat
 
 /**
- * Generates a random GPoint in a spherical shell between innerRadius and outerRadius
- * centered around the given origin.
+ * Generates a random point within a spherical shell between innerRadius and outerRadius
+ * around the given origin. Uses EVEmu's built-in GPoint mutation function.
  *
- * @param origin        The center point to generate around.
- * @param innerRadius   The minimum distance from the origin.
- * @param outerRadius   The maximum distance from the origin.
- * @return              A randomized GPoint within the shell.
+ * @param origin        The center point to spawn near.
+ * @param innerRadius   Minimum distance from the origin.
+ * @param outerRadius   Maximum distance from the origin.
+ * @return              A new GPoint offset randomly in the defined shell volume.
  */
 inline GPoint MakeRandomPointNear(const GPoint& origin, double innerRadius, double outerRadius) {
-    double theta = MakeRandomFloat(0.0, 2 * M_PI);
-    double phi = MakeRandomFloat(0.0, 2 * M_PI);
-    double radius = innerRadius + MakeRandomFloat(0.0, outerRadius - innerRadius);
+    // Copy the original position to avoid modifying the original reference
+    GPoint pos = origin;
 
-    Vector3D offset;
-    offset.x = radius * sin(theta) * cos(phi);
-    offset.y = radius * sin(theta) * sin(phi);
-    offset.z = radius * cos(theta);
+    // Modify the copied point by applying a random offset in the spherical shell
+    pos.MakeRandomPointOnSphereLayer(innerRadius, outerRadius);
 
-    return origin + offset;
+    // Return the randomized position
+    return pos;
 }
 
 #endif // EVE_VECTOR_UTILS_H
