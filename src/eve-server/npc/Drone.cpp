@@ -168,6 +168,12 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     _log(DRONE__TRACE, "Drone %s (%u) launched at position: %.2f, %.2f, %.2f",
         GetName(), GetID(), x(), y(), z());
 
+    _log(DRONE__TRACE, "Drone %s (%u) mass=%.2f radius=%.2f orbitRange=%.2f",
+         GetName(), GetID(),
+         m_self->GetAttribute(AttrMass).get_float(),
+         m_self->GetAttribute(AttrRadius).get_float(),
+         m_self->GetAttribute(AttrOrbitRange).get_float());
+    
     m_system->AddEntity(this);         // Place drone in space and begin idle behavior
 
     assert (m_bubble != nullptr);
