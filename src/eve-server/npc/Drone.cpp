@@ -36,7 +36,6 @@
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
-#include "math/GVector.h"
 
 DroneSE::DroneSE(InventoryItemRef drone, EVEServiceManager &services, SystemManager* pSystem, const FactionData& data)
 : DynamicSystemEntity(drone, services, pSystem),
