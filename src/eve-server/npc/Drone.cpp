@@ -151,6 +151,11 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     m_controllerID = pShipSE->GetID();
     m_controllerOwnerID = pShipSE->GetOwnerID();
 
+    // Set position near ship
+    GPoint shipPos = pShipSE->GetPosition();
+    GPoint launchPos = shipPos.MakeRandomPointOnSphereLayer(500.0, 1000.0); // Safe spawn zone
+    SetPosition(launchPos);
+    
     m_system->AddEntity(this);
 
     assert (m_bubble != nullptr);
@@ -170,6 +175,9 @@ void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
 
     m_AI->AssignShip(pShipSE);
     // Do not call IdleOrbit here — launch should handle that
+
+    if (m_bubble)  // Ensure we are placed in space
+    IdleOrbit(pShipSE);
 }
 
 void DroneSE::Offline() {
