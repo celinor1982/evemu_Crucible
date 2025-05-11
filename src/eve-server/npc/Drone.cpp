@@ -116,6 +116,10 @@ void DroneSE::SetOwner(Client* pClient) {
 void DroneSE::Process() {
     if (m_killed)
         return;
+
+    if (!m_self)
+        return;
+    
     double profileStartTime(GetTimeUSeconds());
 
     /*  Enable base call to Process Targeting and Movement  */
@@ -135,9 +139,10 @@ void DroneSE::SaveDrone() {
 
 void DroneSE::RemoveDrone() {
     // this seems to work properly
-    m_self->Delete();
-    sItemFactory.RemoveItem(this->GetSelf()->itemID());
-    m_killed = true;
+    m_self->Delete(); // delete inventory item
+    sItemFactory.RemoveItem(this->GetSelf()->itemID()); // unregister from itemfactory
+    m_self = DroneItemRef(); // null it out to prevent future use
+    m_killed = true; // mark for entity cleanup
 }
 
 void DroneSE::Launch(ShipSE* pShipSE) {
