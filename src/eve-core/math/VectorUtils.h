@@ -11,7 +11,7 @@
 #ifndef EVE_VECTOR_UTILS_H
 #define EVE_VECTOR_UTILS_H
 
-#include "math/GPoint.h"
+#include "math/gpoint.h"
 #include "math/Vector3D.h"
 #include "utils/misc.h"  // For MakeRandomFloat
 
