@@ -36,6 +36,7 @@
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
+#include "math/VectorUtils.h"
 
 DroneSE::DroneSE(InventoryItemRef drone, EVEServiceManager &services, SystemManager* pSystem, const FactionData& data)
 : DynamicSystemEntity(drone, services, pSystem),
@@ -151,15 +152,12 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     m_controllerID = pShipSE->GetID();
     m_controllerOwnerID = pShipSE->GetOwnerID();
 
-    // Set a randomized position around the ship (500–1000m away)
+    // Set drone's position to a random point near the ship (500–1000m shell)
     GPoint shipPos = pShipSE->GetPosition();
-    Vector3D dir;
-    dir.random_unit();
-    double distance = 500.0 + MakeRandomFloat(0.0, 500.0);
-    GPoint launchPos = shipPos + (dir * distance);
+    GPoint launchPos = MakeRandomPointNear(shipPos, 500.0, 1000.0);
     SetPosition(launchPos);
-    
-    // Now add to system
+
+    // Place drone in space and begin idle behavior
     m_system->AddEntity(this);
 
     assert (m_bubble != nullptr);
