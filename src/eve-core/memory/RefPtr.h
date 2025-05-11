@@ -241,7 +241,7 @@ public:
             fprintf(stderr, "[RefPtr::operator bool] ERROR: 'this' is nullptr! Possibly corrupted RefPtr.\n");
             return false;
         }
-        return mptr != nullptr;
+        return mPtr != nullptr;
     }
 
     X& operator*() const { assert(*this); return *mPtr; }
