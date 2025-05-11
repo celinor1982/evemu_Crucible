@@ -155,10 +155,20 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     // Set drone's position to a random point near the ship (500–1000m shell)
     GPoint shipPos = pShipSE->GetPosition();
     GPoint launchPos = MakeRandomPointNear(shipPos, 500.0, 1000.0);
+
+    // Ensure the position is valid before setting it
+    if (launchPos.isNaN()) {
+        sLog.Error("DroneSE::Launch()", "Generated NaN position for drone %s (%u). Defaulting to fallback position.", GetName(), GetID());
+        launchPos = GPoint(1000.0, 1000.0, 1000.0);
+    }
+    
     SetPosition(launchPos);
 
-    // Place drone in space and begin idle behavior
-    m_system->AddEntity(this);
+    // Log the drone's launch location for debug purposes
+    _log(DRONE__TRACE, "Drone %s (%u) launched at position: %.2f, %.2f, %.2f",
+        GetName(), GetID(), x(), y(), z());
+
+    m_system->AddEntity(this);         // Place drone in space and begin idle behavior
 
     assert (m_bubble != nullptr);
 
