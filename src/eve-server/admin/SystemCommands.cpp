@@ -793,7 +793,7 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, EVEServiceManager &serv
 
         pClient->SystemMgr()->RemoveEntity(sys_entity);
         item_ref->Delete();
-        item_ref = nullptr;
+        item_ref = InventoryItemRef();
         codelog(COMMAND__MESSAGE, "/unspawn called with single target successful");
         return new PyBool(true);
     }
