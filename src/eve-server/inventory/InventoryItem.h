@@ -95,7 +95,16 @@ public:
     bool                    contraband() const          { return m_data.contraband; }
     bool                    isSingleton() const         { return m_data.singleton != 0; }
     int32                   quantity() const            { return m_data.quantity; }
-    uint32                  itemID() const              { return m_itemID; }
+
+    uint32 itemID() const {
+        uintptr_t addr = reinterpret_cast<uintptr_t>(this);
+        if (addr < 0x1000 || addr > 0x0000FFFFFFFFFFFF) {
+            fprintf(stderr, "[InventoryItem::itemID] CRITICAL: 'this' is invalid (0x%lx). Preventing crash.\n", addr);
+            return 0;
+        }
+        return m_itemID;
+    }
+
     uint32                  ownerID() const             { return m_data.ownerID; }
     uint32                  locationID() const          { return m_data.locationID; }
     EVEItemFlags            flag() const                { return m_data.flag; }
