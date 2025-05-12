@@ -2833,7 +2833,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
 
     // tell new drone it's being launched.
     pDrone->Launch(this);
-    pDrone->GetAI()->SetState(DroneState::IDLE);  // Ensure AI starts in idle state
+    pDrone->GetAI()->SetState(DroneAI::State::IDLE);  // Ensure AI starts in idle state
     // add drone to launched drone map (whether onlined or not)
     m_drones.emplace(dRef->itemID(), dRef.get());
 
