@@ -188,24 +188,13 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
         pShipSE = m_pShipSE;
 
     if (!m_online)
-        return;
+        return;         // error here?
 
-    // Ensure safe velocity
-    double maxVel = m_self->GetAttribute(AttrMaxVelocity).get_float();
-    if (maxVel < 50.0f || maxVel > 5000.0f) {
-        maxVel = 300.0f;
-        m_self->SetAttribute(AttrMaxVelocity, maxVel, false);
-    }
-
-    // Clamp orbit distance
-    if (m_orbitRange < 300.0f || m_orbitRange > 5000.0f)
-        m_orbitRange = 1250.0f;
-
-    m_destiny->SetMaxVelocity(maxVel);
+    // TODO:  fix these speeds
+    // set speed and begin orbit
+    m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
-
-    _log(DRONE__TRACE, "Drone %s(%u): Orbiting at %.1f m/s, range %.1f", m_self->itemName(), m_self->itemID(), maxVel, m_orbitRange);
 }
 
 void DroneSE::Abandon() {
