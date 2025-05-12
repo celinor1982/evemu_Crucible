@@ -100,6 +100,7 @@ DroneSE::DroneSE(InventoryItemRef drone, EVEServiceManager &services, SystemMana
     m_armorDamage = m_self->GetAttribute(AttrArmorDamage).get_float();
     m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
     m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
+    m_orbitDelayTimer.Disable();  // delay timer for post-launch orbit
 
     _log(DRONE__TRACE, "Created Drone object for %s (%u)", drone.get()->name(), drone.get()->itemID());
 }
@@ -127,6 +128,13 @@ void DroneSE::Process() {
 
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
+
+    // Delayed Orbit trigger
+    if (m_online && m_orbitDelayTimer.Enabled() && m_orbitDelayTimer.Check()) {
+        IdleOrbit();
+        m_orbitDelayTimer.Disable();
+    }
+
 
     /** @todo (allan) finish drone AI and processing */
     if (m_online)
@@ -160,9 +168,11 @@ void DroneSE::Launch(ShipSE* pShipSE) {
 
     assert (m_bubble != nullptr);
 
+    m_orbitDelayTimer.Start(500);  // delay orbit until system adds are fully synced
+
     // Online the drone and start idle orbit
     Online(pShipSE);
-    IdleOrbit(pShipSE);
+    // IdleOrbit(pShipSE);
 }
 
 void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
