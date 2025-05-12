@@ -123,6 +123,7 @@ private:
     uint32 m_targetID;
     uint32 m_controllerID;
     uint32 m_controllerOwnerID;
+    Timer m_orbitDelayTimer;  // used to delay IdleOrbit call until after drone is stable
 
     double m_orbitRange;
     double m_emDamage;
