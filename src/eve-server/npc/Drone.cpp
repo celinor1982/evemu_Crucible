@@ -176,19 +176,38 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
         pShipSE = m_pShipSE;
 
     if (!m_online)
-        return;         // error here?
+        return;
 
-    // TODO:  fix these speeds
-    // set speed and begin orbit
-    m_destiny->SetMaxVelocity(500);
+    // Fallbacks if data is missing or uninitialized
+    double maxVel = m_self->GetAttribute(AttrMaxVelocity).get_float();
+    if (maxVel < 50.0f || maxVel > 5000.0f) {
+        maxVel = 300.0f; // clamp weird drone speeds
+        m_self->SetAttribute(AttrMaxVelocity, maxVel, false);
+    }
+
+    double orbitDist = m_orbitRange;
+    if (orbitDist < 100.0f || orbitDist > 5000.0f)
+        orbitDist = 1250.0f;
+
+    // Special handling for mining drones to make them visible
+    uint32 groupID = m_self->groupID();
+    if (groupID == 101 /*Mining*/ && orbitDist < 800.0f)
+        orbitDist = 800.0f;
+
+    m_destiny->SetMaxVelocity(maxVel);
     m_destiny->SetSpeedFraction(0.6f);
-    m_destiny->Orbit(pShipSE, m_orbitRange);
+
+    // Use follow instead of orbit for support drones to reduce erratic movement
+    if (groupID == 101 /*Mining*/ || groupID == 102 /*Logistics*/ || groupID == 103 /*E-War*/ || groupID == 104 /*Utility*/) {
+        m_destiny->Follow(pShipSE, orbitDist);
+    } else {
+        m_destiny->Orbit(pShipSE, orbitDist);
+    }
+
+    _log(DRONE__TRACE, "Drone %s(%u): Initialized idle movement - Vel %.1f, Range %.1f", 
+        m_self->itemName(), m_self->itemID(), maxVel, orbitDist);
 }
 
-void DroneSE::Abandon() {
-    SystemEntity::Abandon();
-    Offline();
-}
 
 /*   when drone is scooped up....
  *
