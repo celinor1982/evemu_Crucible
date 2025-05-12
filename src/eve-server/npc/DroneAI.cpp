@@ -74,9 +74,7 @@ void DroneAIMgr::Process() {
             // check everything in this state.   return to ship?
         } break;
         case DroneAI::State::Idle: {
-            if (!m_pDrone->DestinyMgr()->IsOrbiting()) {
-                m_pDrone->IdleOrbit(m_assignedShip);
-            }
+            // orbiting controlling ship
         } break;
         case DroneAI::State::Engaged: {
             //NOTE: getting our pTarget like this is pretty weak...
