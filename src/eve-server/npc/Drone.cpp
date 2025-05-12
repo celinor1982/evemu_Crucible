@@ -36,7 +36,6 @@
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
-#include "math/VectorUtils.h"
 
 DroneSE::DroneSE(InventoryItemRef drone, EVEServiceManager &services, SystemManager* pSystem, const FactionData& data)
 : DynamicSystemEntity(drone, services, pSystem),
@@ -117,10 +116,6 @@ void DroneSE::SetOwner(Client* pClient) {
 void DroneSE::Process() {
     if (m_killed)
         return;
-
-    if (!m_self)
-        return;
-    
     double profileStartTime(GetTimeUSeconds());
 
     /*  Enable base call to Process Targeting and Movement  */
@@ -140,10 +135,8 @@ void DroneSE::SaveDrone() {
 
 void DroneSE::RemoveDrone() {
     // this seems to work properly
-    m_self->Delete(); // delete inventory item
-    sItemFactory.RemoveItem(this->GetSelf()->itemID()); // unregister from itemfactory
-    m_self = InventoryItemRef(); // null it out to prevent future use
-    m_killed = true; // mark for entity cleanup
+    m_self->Delete();
+    delete this;
 }
 
 void DroneSE::Launch(ShipSE* pShipSE) {
@@ -152,48 +145,9 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     m_controllerID = pShipSE->GetID();
     m_controllerOwnerID = pShipSE->GetOwnerID();
 
-    // Set drone's position to a random point near the ship (500–1000m shell)
-    GPoint shipPos = pShipSE->GetPosition();
-    GPoint launchPos = MakeRandomPointNear(shipPos, 500.0, 1000.0);
-
-    // Ensure the position is valid before setting it
-    if (launchPos.isNaN()) {
-        sLog.Error("DroneSE::Launch()", "Generated NaN position for drone %s (%u). Defaulting to fallback position.", GetName(), GetID());
-        launchPos = GPoint(1000.0, 1000.0, 1000.0);
-    }
-    
-    SetPosition(launchPos);
-
-    // Log the drone's launch location for debug purposes
-    _log(DRONE__TRACE, "Drone %s (%u) launched at position: %.2f, %.2f, %.2f",
-        GetName(), GetID(), x(), y(), z());
-
-    _log(DRONE__TRACE, "Drone %s (%u) mass=%.2f radius=%.2f orbitRange=%.2f",
-         GetName(), GetID(),
-         m_self->GetAttribute(AttrMass).get_float(),
-         m_self->GetAttribute(AttrRadius).get_float(),
-         m_self->GetAttribute(AttrOrbitRange).get_float());
-    
-    m_system->AddEntity(this);         // Place drone in space and begin idle behavior
+    m_system->AddEntity(this);
 
     assert (m_bubble != nullptr);
-
-    // Automatically set the drone to idle and orbit
-    this->Online(pShipSE);           // Enables drone and assigns ship
-    this->GetAI()->SetIdle();        // Set AI state to Idle
-
-    // Safety fallback for missing attributes
-    if (m_self->GetAttribute(AttrMass).get_float() <= 0.0f)
-        m_self->SetAttribute(AttrMass, 100.0f, false);
-    if (m_self->GetAttribute(AttrRadius).get_float() <= 0.0f)
-        m_self->SetAttribute(AttrRadius, 5.0f, false);
-    if (m_self->GetAttribute(AttrOrbitRange).get_float() <= 0.0f)
-        m_self->SetAttribute(AttrOrbitRange, 1000.0f, false);
-    
-    // Re-sync Destiny vars now that attributes are safe
-    m_destiny->UpdateShipVariables();
-    
-    this->IdleOrbit(pShipSE);        // Begin idle orbit immediately
 }
 
 void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
@@ -204,10 +158,6 @@ void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
         pShipSE = m_pShipSE;
 
     m_AI->AssignShip(pShipSE);
-    // Do not call IdleOrbit here — launch should handle that
-
-    if (m_bubble)  // Ensure we are placed in space
-    IdleOrbit(pShipSE);
 }
 
 void DroneSE::Offline() {
