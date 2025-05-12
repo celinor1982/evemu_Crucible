@@ -57,19 +57,12 @@ DroneSE::DroneSE(InventoryItemRef drone, EVEServiceManager &services, SystemMana
     m_controllerOwnerID = 0;
 
     m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_float();
-    
-    if (m_orbitRange < 100.0f) { // fallback if not set or too small
-        float maxRange = m_self->GetAttribute(AttrMaxRange).get_float();
-        float falloff = m_self->GetAttribute(AttrFalloff).get_float();
-        m_orbitRange = (maxRange > 0 ? maxRange : (falloff > 0 ? falloff : 1250.0f));
-    }
-
-    // --- SAFE MAX VELOCITY FALLBACK (Code B) ---
-    float maxVel = m_self->GetAttribute(AttrMaxVelocity).get_float();
-    if (maxVel < 10.0f) {
-        maxVel = 300.0f;
-        m_self->SetAttribute(AttrMaxVelocity, maxVel, false);
-        _log(DRONE__TRACE, "Drone %s(%u): MaxVelocity was too low, setting to 300", m_self->itemName(), m_self->itemID());
+    if (m_orbitRange < 1) {
+        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff)) {
+            m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
+        } else {
+            m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
+        }
     }
 
     // Create default dynamic attributes in the AttributeMap:
@@ -100,7 +93,6 @@ DroneSE::DroneSE(InventoryItemRef drone, EVEServiceManager &services, SystemMana
     m_armorDamage = m_self->GetAttribute(AttrArmorDamage).get_float();
     m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
     m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
-    m_orbitDelayTimer.Disable();  // delay timer for post-launch orbit
 
     _log(DRONE__TRACE, "Created Drone object for %s (%u)", drone.get()->name(), drone.get()->itemID());
 }
@@ -124,25 +116,44 @@ void DroneSE::SetOwner(Client* pClient) {
 void DroneSE::Process() {
     if (m_killed)
         return;
+
     double profileStartTime(GetTimeUSeconds());
 
-    /*  Enable base call to Process Targeting and Movement  */
+    // Call base system entity logic (handles targeting, destiny updates, etc.)
     SystemEntity::Process();
 
-    // Delayed Orbit trigger
-    if (m_online && m_orbitDelayTimer.Enabled() && m_orbitDelayTimer.Check()) {
-        IdleOrbit();
-        m_orbitDelayTimer.Disable();
+    // Delayed activation check
+    // Wait until the drone is in a valid bubble before setting it fully online
+    if (m_readyToOrbit && m_bubble != nullptr) {
+        _log(DRONE__TRACE, "Drone %s(%u): Now going online and activating AI orbit", GetName(), GetID());
+        m_online = true;
+        StateChange();           // Broadcast online state to clients
+        m_readyToOrbit = false;  // Clear the delayed activation flag
     }
 
-
-    /** @todo (allan) finish drone AI and processing */
+    // Run drone AI logic once it's fully online
     if (m_online)
         m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
 }
+
+/** void DroneSE::Process() {
+    if (m_killed)
+        return;
+    double profileStartTime(GetTimeUSeconds());
+
+    /*  Enable base call to Process Targeting and Movement  */
+    SystemEntity::Process();
+
+    /** @todo (allan) finish drone AI and processing */
+/*    if (m_online)
+        m_AI->Process();
+
+    if (sConfig.debug.UseProfiling)
+        sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
+} */
 
 void DroneSE::SaveDrone() {
     m_self->SaveItem();
@@ -156,32 +167,32 @@ void DroneSE::RemoveDrone() {
 
 void DroneSE::Launch(ShipSE* pShipSE) {
     m_pShipSE = pShipSE;
+    m_controllerID = pShipSE->GetID();
+    m_controllerOwnerID = pShipSE->GetOwnerID();
+
+    m_system->AddEntity(this);
+    assert(m_bubble != nullptr);
+
+    // Delay going online/orbit until safe
+    Online(pShipSE);  // will now only set `m_readyToOrbit`
+    // IdleOrbit will now be triggered inside Process() via AI->SetIdle() only AFTER safe bubble entry
+}
+
+/** void DroneSE::Launch(ShipSE* pShipSE) {
+    m_pShipSE = pShipSE;
 
     m_controllerID = pShipSE->GetID();
     m_controllerOwnerID = pShipSE->GetOwnerID();
 
-    // 🔧 Fix: Set drone position to controller's position before AddEntity
-    GPoint launchPosition = pShipSE->GetPosition();
-    m_destiny->SetPosition(launchPosition, true);  // 'true' triggers immediate update
-
     m_system->AddEntity(this);
 
-    // --- POSITION NUDGE TO AVOID STACKING ISSUE (Code C) ---
-    GVector nudge(5.0, 0.0, 0.0);  // small displacement
-    m_destiny->SetPosition(m_destiny->GetPosition() + nudge);
-
     assert (m_bubble != nullptr);
-
-    m_orbitDelayTimer.Start(500);  // delay orbit until system adds are fully synced
-
-    // Online the drone and start idle orbit
-    Online(pShipSE);
-    // IdleOrbit(pShipSE);
-}
+}*/
 
 void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
-    m_online = true;
-    StateChange();
+    m_readyToOrbit = true;  // delay full online status
+    // m_online = true;
+    // StateChange();
 
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
@@ -201,24 +212,11 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
-    if (!m_online || m_bubble == nullptr)
-        return;
+    if (!m_online)
+        return;         // error here?
 
-    uint32 groupID = m_self->groupID();
-
-    // Special-case for Mining Drones: use Follow instead of Orbit
-    if (groupID == 101) {  // 101 = Mining Drone
-        _log(DRONE__TRACE, "Mining Drone %s(%u): Using fallback follow behavior", m_self->itemName(), m_self->itemID());
-
-        m_destiny->SetMaxVelocity(250.0);
-        m_destiny->SetSpeedFraction(0.25f);
-
-        // Follow the ship with loose range, creates natural orbit-style drift
-        m_destiny->Follow(pShipSE, 800.0);  // safe mining drone hover distance
-        return;
-    }
-
-    // All other drones: use normal orbit
+    // TODO:  fix these speeds
+    // set speed and begin orbit
     m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
@@ -360,33 +358,13 @@ void DroneSE::EncodeDestiny( Buffer& into )
                 follow.formationID = 0xFF;
             into.Append( follow );
         }  break;
-        
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
-            orbit.targetID = m_destiny->GetTargetID();
-        
-            if (orbit.targetID == 0) {
-                _log(DRONE__WARNING, "Drone %s(%u): ORBIT mode with no targetID, switching to STOP mode.", GetName(), GetID());
-                BallHeader head = BallHeader();
-                head.entityID = GetID();
-                head.mode = Ball::Mode::STOP;
-                head.radius = GetRadius();
-                head.posX = x();
-                head.posY = y();
-                head.posZ = z();
-                head.flags = Ball::Flag::IsFree;
-                into.Append(head);
-                break;
-            }
-        
-            orbit.followRange = m_destiny->GetFollowDistance();
-            if (orbit.followRange < 100.0)
-                orbit.followRange = 1000.0;  // prevent 0 range
-        
-            orbit.formationID = 0xFF;
-            into.Append(orbit);
-        } break;
-
+                orbit.targetID = m_destiny->GetTargetID();
+                orbit.followRange = m_destiny->GetFollowDistance();
+                orbit.formationID = 0xFF;
+            into.Append( orbit );
+        }  break;
         case Ball::Mode::GOTO: {
             GPoint target = m_destiny->GetTargetPoint();
             GOTO_Struct go;
