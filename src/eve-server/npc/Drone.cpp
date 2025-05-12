@@ -201,8 +201,24 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
-    if (!m_online)
-        return;         // error here?
+    if (!m_online || m_bubble == nullptr)
+        return;
+
+    uint32 groupID = m_self->groupID();
+
+    // Special-case for Mining Drones: do NOT Orbit, just idle with velocity
+    if (groupID == 101) {  // 101 = Mining Drone
+        _log(DRONE__TRACE, "Mining Drone %s(%u): Using fallback idle movement", m_self->itemName(), m_self->itemID());
+
+        m_destiny->SetMaxVelocity(250.0);  // ensure it's something visible
+        m_destiny->SetSpeedFraction(0.25f);
+
+        // Apply a slight nudge so the Destiny system sees it as "in motion"
+        GVector offset(50.0, 0.0, 0.0);  // 50 meters to the side
+        m_destiny->SetPosition(m_pShipSE->GetPosition() + offset);
+
+        return;
+    }
 
     // TODO:  fix these speeds
     // set speed and begin orbit
