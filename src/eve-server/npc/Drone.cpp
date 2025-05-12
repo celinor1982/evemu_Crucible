@@ -360,13 +360,33 @@ void DroneSE::EncodeDestiny( Buffer& into )
                 follow.formationID = 0xFF;
             into.Append( follow );
         }  break;
+        
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
-                orbit.targetID = m_destiny->GetTargetID();
-                orbit.followRange = m_destiny->GetFollowDistance();
-                orbit.formationID = 0xFF;
-            into.Append( orbit );
-        }  break;
+            orbit.targetID = m_destiny->GetTargetID();
+        
+            if (orbit.targetID == 0) {
+                _log(DRONE__WARNING, "Drone %s(%u): ORBIT mode with no targetID, switching to STOP mode.", GetName(), GetID());
+                BallHeader head = BallHeader();
+                head.entityID = GetID();
+                head.mode = Ball::Mode::STOP;
+                head.radius = GetRadius();
+                head.posX = x();
+                head.posY = y();
+                head.posZ = z();
+                head.flags = Ball::Flag::IsFree;
+                into.Append(head);
+                break;
+            }
+        
+            orbit.followRange = m_destiny->GetFollowDistance();
+            if (orbit.followRange < 100.0)
+                orbit.followRange = 1000.0;  // prevent 0 range
+        
+            orbit.formationID = 0xFF;
+            into.Append(orbit);
+        } break;
+
         case Ball::Mode::GOTO: {
             GPoint target = m_destiny->GetTargetPoint();
             GOTO_Struct go;
