@@ -73,13 +73,9 @@ void DroneAIMgr::Process() {
         case DroneAI::State::Invalid: {
             // check everything in this state.   return to ship?
         } break;
-        case DroneAI::State::IDLE: {
-            SystemEntity* ownerSE = m_system->GetSE(m_pDrone->GetOwnerID());
-            if (ownerSE != nullptr && m_pDrone->DestinyMgr()->IsStopped()) {
-                m_pDrone->DestinyMgr()->Orbit(ownerSE, 1000.0f); // Orbit at 1,000m
-            }
-            break;
-        }
+        case DroneAI::State::Idle: {
+            // orbiting controlling ship
+        } break;
         case DroneAI::State::Engaged: {
             //NOTE: getting our pTarget like this is pretty weak...
             SystemEntity* pTarget = m_pDrone->TargetMgr()->GetFirstTarget(true);
