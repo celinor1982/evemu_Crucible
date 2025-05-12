@@ -160,6 +160,10 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     m_controllerID = pShipSE->GetID();
     m_controllerOwnerID = pShipSE->GetOwnerID();
 
+    // 🔧 Fix: Set drone position to controller's position before AddEntity
+    GPoint launchPosition = pShipSE->GetPosition();
+    m_destiny->SetPosition(launchPosition, true);  // 'true' triggers immediate update
+
     m_system->AddEntity(this);
 
     // --- POSITION NUDGE TO AVOID STACKING ISSUE (Code C) ---
