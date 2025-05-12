@@ -64,6 +64,14 @@ DroneSE::DroneSE(InventoryItemRef drone, EVEServiceManager &services, SystemMana
         m_orbitRange = (maxRange > 0 ? maxRange : (falloff > 0 ? falloff : 1250.0f));
     }
 
+    // --- SAFE MAX VELOCITY FALLBACK (Code B) ---
+    float maxVel = m_self->GetAttribute(AttrMaxVelocity).get_float();
+    if (maxVel < 10.0f) {
+        maxVel = 300.0f;
+        m_self->SetAttribute(AttrMaxVelocity, maxVel, false);
+        _log(DRONE__TRACE, "Drone %s(%u): MaxVelocity was too low, setting to 300", m_self->itemName(), m_self->itemID());
+    }
+
     // Create default dynamic attributes in the AttributeMap:
     m_self->SetAttribute(AttrInertia,             EvilOne, false);
     m_self->SetAttribute(AttrDamage,              EvilZero, false);
@@ -146,6 +154,12 @@ void DroneSE::Launch(ShipSE* pShipSE) {
 
     m_system->AddEntity(this);
 
+    // --- POSITION NUDGE TO AVOID STACKING ISSUE (Code C) ---
+    GVector nudge(5.0, 0.0, 0.0);  // small displacement
+    m_destiny->SetPosition(m_destiny->GetPosition() + nudge);
+    
+    m_destiny->SendNewBall(); // force update to client
+
     assert (m_bubble != nullptr);
 
     // Online the drone and start idle orbit
@@ -176,13 +190,24 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
         pShipSE = m_pShipSE;
 
     if (!m_online)
-        return;         // error here?
+        return;
 
-    // TODO:  fix these speeds
-    // set speed and begin orbit
-    m_destiny->SetMaxVelocity(500);
+    // Ensure safe velocity
+    double maxVel = m_self->GetAttribute(AttrMaxVelocity).get_float();
+    if (maxVel < 50.0f || maxVel > 5000.0f) {
+        maxVel = 300.0f;
+        m_self->SetAttribute(AttrMaxVelocity, maxVel, false);
+    }
+
+    // Clamp orbit distance
+    if (m_orbitRange < 300.0f || m_orbitRange > 5000.0f)
+        m_orbitRange = 1250.0f;
+
+    m_destiny->SetMaxVelocity(maxVel);
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
+
+    _log(DRONE__TRACE, "Drone %s(%u): Orbiting at %.1f m/s, range %.1f", m_self->itemName(), m_self->itemID(), maxVel, m_orbitRange);
 }
 
 void DroneSE::Abandon() {
