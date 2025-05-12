@@ -95,21 +95,9 @@ void ShipItem::LogOut()
     // remove ship item from its' container's inventory list also.
     Inventory* pInv(nullptr);
     if (sDataMgr.IsStation(locationID())) {
-	Inventory* inv = sItemFactory.GetStationRef(locationID())->GetMyInventory();
-	if (inv)
-	    pInv = inv;
-	else {
-	    _log(SHIP__ERROR, "Ship.cpp: NULL inventory from StationRef %u", locationID());
-	    pInv = nullptr;
-	}
+        pInv = sItemFactory.GetStationRef(locationID())->GetMyInventory();
     } else {
-	Inventory* inv = sItemFactory.GetSolarSystemRef(locationID())->GetMyInventory();
-	if (inv)
-	    pInv = inv;
-	else {
-	    _log(SHIP__ERROR, "Ship.cpp: NULL inventory from SolarSystemRef %u", locationID());
-	    pInv = nullptr;
-	}
+        pInv = sItemFactory.GetSolarSystemRef(locationID())->GetMyInventory();
     }
 
     if (pInv != nullptr)
@@ -2727,12 +2715,7 @@ PyDict* ShipSE::MakeSlimItem() {
 
     //encode the hiSlot and Subsystem modules list ONLY
     std::vector<InventoryItemRef> items;
-    Inventory* inv = m_self->GetMyInventory();
-    if (inv)
-    	inv->GetItemsByFlagRange(flagHiSlot0, flagHiSlot7, items);
-    else
-    	_log(SHIP__ERROR, "Ship.cpp: NULL inventory for ship %u while accessing high slots.", m_self->itemID());
-
+    m_self->GetMyInventory()->GetItemsByFlagRange(flagHiSlot0, flagHiSlot7, items);
     //m_self->GetMyInventory()->GetItemsByFlagRange(flagSubSystem0, flagSubSystem7, items);
     if (!items.empty()) {
         PyList *list = new PyList();
@@ -2833,7 +2816,6 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
 
     // tell new drone it's being launched.
     pDrone->Launch(this);
-    pDrone->GetAI()->SetState(DroneAI::State::IDLE);  // Ensure AI starts in idle state
     // add drone to launched drone map (whether onlined or not)
     m_drones.emplace(dRef->itemID(), dRef.get());
 
