@@ -189,16 +189,27 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     assert (m_bubble != nullptr);
 }*/
 
-void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
-    m_readyToOrbit = true;  // delay full online status
-    // m_online = true;
-    // StateChange();
+void DroneSE::Online(ShipSE* pShipSE /*= nullptr*/) {
+    if (pShipSE == nullptr)
+        pShipSE = m_pShipSE;
+
+    m_AI->AssignShip(pShipSE);
+
+    // Delay going fully online until Process() confirms bubble assignment
+    m_readyToOrbit = true;
+
+    _log(DRONE__TRACE, "Drone %s(%u): Online request received — awaiting bubble to activate orbit.", GetName(), GetID());
+}
+
+//void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
+/*    m_online = true;
+    StateChange();
 
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
     m_AI->AssignShip(pShipSE);
-}
+}*/
 
 void DroneSE::Offline() {
     // this is called by abandon also
