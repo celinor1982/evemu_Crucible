@@ -120,6 +120,7 @@ protected:
 
 private:
     bool m_online;              // is drone within ship's control range?
+    bool m_readyToOrbit = false;
     uint32 m_targetID;
     uint32 m_controllerID;
     uint32 m_controllerOwnerID;
