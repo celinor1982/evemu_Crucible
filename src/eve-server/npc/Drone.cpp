@@ -208,6 +208,10 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
         m_self->itemName(), m_self->itemID(), maxVel, orbitDist);
 }
 
+void DroneSE::Abandon() {
+    SystemEntity::Abandon();
+    Offline();
+}
 
 /*   when drone is scooped up....
  *
