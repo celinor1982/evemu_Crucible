@@ -74,8 +74,9 @@ void DroneAIMgr::Process() {
             // check everything in this state.   return to ship?
         } break;
         case DroneAI::State::IDLE: {
-            if (m_pDrone->DestinyMgr()->IsStopped()) {
-                m_pDrone->DestinyMgr()->Orbit(m_pDrone->GetOwnerID(), 1000.0f); // Orbit at 1,000m
+            SystemEntity* ownerSE = m_system->GetSE(m_pDrone->GetOwnerID());
+            if (ownerSE != nullptr && m_pDrone->DestinyMgr()->IsStopped()) {
+                m_pDrone->DestinyMgr()->Orbit(ownerSE, 1000.0f); // Orbit at 1,000m
             }
             break;
         }
