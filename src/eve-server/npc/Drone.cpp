@@ -157,8 +157,6 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     // --- POSITION NUDGE TO AVOID STACKING ISSUE (Code C) ---
     GVector nudge(5.0, 0.0, 0.0);  // small displacement
     m_destiny->SetPosition(m_destiny->GetPosition() + nudge);
-    
-    m_destiny->SendNewBall(); // force update to client
 
     assert (m_bubble != nullptr);
 
