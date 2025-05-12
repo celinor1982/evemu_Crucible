@@ -206,22 +206,19 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
 
     uint32 groupID = m_self->groupID();
 
-    // Special-case for Mining Drones: do NOT Orbit, just idle with velocity
+    // Special-case for Mining Drones: use Follow instead of Orbit
     if (groupID == 101) {  // 101 = Mining Drone
-        _log(DRONE__TRACE, "Mining Drone %s(%u): Using fallback idle movement", m_self->itemName(), m_self->itemID());
+        _log(DRONE__TRACE, "Mining Drone %s(%u): Using fallback follow behavior", m_self->itemName(), m_self->itemID());
 
-        m_destiny->SetMaxVelocity(250.0);  // ensure it's something visible
+        m_destiny->SetMaxVelocity(250.0);
         m_destiny->SetSpeedFraction(0.25f);
 
-        // Apply a slight nudge so the Destiny system sees it as "in motion"
-        GVector offset(50.0, 0.0, 0.0);  // 50 meters to the side
-        m_destiny->SetPosition(m_pShipSE->GetPosition() + offset);
-
+        // Follow the ship with loose range, creates natural orbit-style drift
+        m_destiny->Follow(pShipSE, 800.0);  // safe mining drone hover distance
         return;
     }
 
-    // TODO:  fix these speeds
-    // set speed and begin orbit
+    // All other drones: use normal orbit
     m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
