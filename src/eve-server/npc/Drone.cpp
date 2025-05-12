@@ -57,12 +57,11 @@ DroneSE::DroneSE(InventoryItemRef drone, EVEServiceManager &services, SystemMana
     m_controllerOwnerID = 0;
 
     m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_float();
-    if (m_orbitRange < 1) {
-        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff)) {
-            m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
-        } else {
-            m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
-        }
+    
+    if (m_orbitRange < 100.0f) { // fallback if not set or too small
+        float maxRange = m_self->GetAttribute(AttrMaxRange).get_float();
+        float falloff = m_self->GetAttribute(AttrFalloff).get_float();
+        m_orbitRange = (maxRange > 0 ? maxRange : (falloff > 0 ? falloff : 1250.0f));
     }
 
     // Create default dynamic attributes in the AttributeMap:
