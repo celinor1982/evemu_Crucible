@@ -139,21 +139,21 @@ void DroneSE::Process() {
         sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
 }
 
-/** void DroneSE::Process() {
-    if (m_killed)
-        return;
-    double profileStartTime(GetTimeUSeconds());
+// void DroneSE::Process() {
+//    if (m_killed)
+//        return;
+//    double profileStartTime(GetTimeUSeconds());
 
     /*  Enable base call to Process Targeting and Movement  */
-    SystemEntity::Process();
+//    SystemEntity::Process();
 
     /** @todo (allan) finish drone AI and processing */
-/*    if (m_online)
-        m_AI->Process();
+//    if (m_online)
+//        m_AI->Process();
 
-    if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
-} */
+//    if (sConfig.debug.UseProfiling)
+//        sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
+//} 
 
 void DroneSE::SaveDrone() {
     m_self->SaveItem();
