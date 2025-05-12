@@ -148,6 +148,10 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     m_system->AddEntity(this);
 
     assert (m_bubble != nullptr);
+
+    // Online the drone and start idle orbit
+    Online(pShipSE);
+    IdleOrbit(pShipSE);
 }
 
 void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
