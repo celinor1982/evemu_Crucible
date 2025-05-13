@@ -63,8 +63,13 @@ void FxAction::DoAction(uint8 action, SystemEntity* pSE)
         case dgmVERIFYTARGETGROUP: { // 74,
         } break;
         /* unique/special to EVEmu */
-        case dgmSPEEDBOOST: { //  75    //effectID 14  - prop mod to call destiny speed updates
+        case dgmSPEEDBOOST: { // effectID 14 - prop mod to call destiny speed updates
             if ((pSE != nullptr) and (pSE->DestinyMgr())) {
+                if (pSE->SysBubble() == nullptr) {
+                    _log(EFFECTS__ERROR, "FxAction::DoAction(): dgmSPEEDBOOST - SysBubble is null for entity %s(%u). Aborting SpeedBoost.", 
+                         pSE->GetName(), pSE->GetID());
+                    return;
+                }
                 pSE->DestinyMgr()->SpeedBoost();
             } else {
                 _log(EFFECTS__ERROR, "FxAction::DoAction(): dgmSPEEDBOOST called with invalid pSE or DestinyMgr");
