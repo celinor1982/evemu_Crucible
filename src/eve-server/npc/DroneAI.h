@@ -96,6 +96,8 @@ private:
     Timer m_beginFindTarget;
     Timer m_warpScramblerTimer;
     Timer m_webifierTimer;
+
+    bool m_needsInitialIdle = true;
 };
 
 #endif  // __EVEMU_SHIP_DRONEAI_H__
