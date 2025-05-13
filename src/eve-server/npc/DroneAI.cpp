@@ -74,8 +74,17 @@ void DroneAIMgr::Process() {
             // check everything in this state.   return to ship?
         } break;
         case DroneAI::State::Idle: {
-            // orbiting controlling ship
+            if (m_needsInitialIdle) {
+                _log(DRONE__AI_TRACE, "Drone %s(%u): Forcing initial IdleOrbit call", m_pDrone->GetName(), m_pDrone->GetID());
+                SetIdle();
+                m_needsInitialIdle = false;
+                return;
+            }
+            // already idle, nothing else to do
         } break;
+        /*case DroneAI::State::Idle: {
+            // orbiting controlling ship
+        } break;*/
         case DroneAI::State::Engaged: {
             //NOTE: getting our pTarget like this is pretty weak...
             SystemEntity* pTarget = m_pDrone->TargetMgr()->GetFirstTarget(true);
