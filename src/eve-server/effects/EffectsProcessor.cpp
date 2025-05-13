@@ -516,10 +516,10 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             newValue = EvilZero;
         }
     }
-    /*  not used
+    //  not used
     if (action)
         sFxAct.DoAction(action, pShip->GetPilot()->GetShipSE());   // this MUST be called AFTER all active effects are applied, as it uses those modified values
-     */
+     
 
     pItem->ClearModifiers();
 
