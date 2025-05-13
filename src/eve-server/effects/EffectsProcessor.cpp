@@ -514,11 +514,11 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)
             item->SetAttribute(cur.second.targAttr, newValue, update);
             newValue = EvilZero;
-        }
-    }
 
-    if (pShip && pShip->GetPilot() && cur.second.action != FX::Action::Invalid) {
-        sFxAct.DoAction(cur.second.action, pShip->GetPilot()->GetShipSE());
+            if (pShip && pShip->GetPilot() && cur.second.action != FX::Action::Invalid) {
+                    sFxAct.DoAction(cur.second.action, pShip->GetPilot()->GetShipSE());
+            }
+        }
     }
 
     /*  not used
