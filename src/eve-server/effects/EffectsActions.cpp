@@ -28,7 +28,7 @@
 void FxAction::DoAction(uint8 action, SystemEntity* pSE)
 {
     using namespace FX;
-    if (action == FX::Action::ActInvalid)
+    if (action == FX::Action::Invalid)
         ; //make error and return
 
     switch (action) {
