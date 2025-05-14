@@ -238,13 +238,13 @@ SET( dungeon_SOURCE
      "${TARGET_SOURCE_DIR}/dungeon/DungeonService.cpp" )
 
 SET( effects_INCLUDE
-     "${TARGET_INCLUDE_DIR}/effects/EffectsActions.h"
+     #"${TARGET_INCLUDE_DIR}/effects/EffectsActions.h"
      "${TARGET_INCLUDE_DIR}/effects/EffectsData.h"
      "${TARGET_INCLUDE_DIR}/effects/EffectsDataMgr.h"
      "${TARGET_INCLUDE_DIR}/effects/EffectsProcessor.h"
      "${TARGET_INCLUDE_DIR}/effects/fxData.h")
 SET( effects_SOURCE
-     "${TARGET_SOURCE_DIR}/effects/EffectsActions.cpp"
+     #"${TARGET_SOURCE_DIR}/effects/EffectsActions.cpp"
      "${TARGET_SOURCE_DIR}/effects/EffectsDataMgr.cpp"
      "${TARGET_SOURCE_DIR}/effects/EffectsProcessor.cpp" )
 
