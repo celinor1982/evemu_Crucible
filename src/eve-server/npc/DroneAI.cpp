@@ -160,7 +160,7 @@ void DroneAIMgr::SetIdle() {
         m_pDrone->GetName(), m_pDrone->GetID());
 
     m_state = DroneAI::State::Idle;
-    ProcessIdleState();  // Always start orbit when entering idle
+    this->ProcessIdleState();  // Always start orbit when entering idle
 }
 
 void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
