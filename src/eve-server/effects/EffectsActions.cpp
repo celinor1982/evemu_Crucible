@@ -28,61 +28,61 @@
 void FxAction::DoAction(uint8 action, SystemEntity* pSE)
 {
     using namespace FX;
-    if (action == Action::dgmActInvalid)
+    if (action == FX::Action::ActInvalid)
         ; //make error and return
 
     switch (action) {
-        case dgmATTACK: { // 13,
+        case FX::Action::ATTACK: { // 13,
         } break;
-        case dgmCHEATTELEDOCK: { // 15,
+        case FX::Action::CHEATTELEDOCK: { // 15,
         } break;
-        case dgmCHEATTELEGATE: { // 16,
+        case FX::Action::CHEATTELEGATE: { // 16,
         } break;
-        case dgmDECLOAKWAVE: { // 19,
+        case FX::Action::DECLOAKWAVE: { // 19,
         } break;
-        case dgmECMBURST: { //    30,
+        case FX::Action::ECMBURST: { //    30,
         } break;
-        case dgmEMPWAVE: { //     32,
+        case FX::Action::EMPWAVE: { //     32,
         } break;
-        case dgmLAUNCH: { //      44,
+        case FX::Action::LAUNCH: { //      44,
         } break;
-        case dgmLAUNCHDEFENDERMISSILE: { // 45,
+        case FX::Action::LAUNCHDEFENDERMISSILE: { // 45,
         } break;
-        case dgmLAUNCHDRONE: { // 46,
+        case FX::Action::LAUNCHDRONE: { // 46,
         } break;
-        case dgmLAUNCHFOFMISSILE: { // 47,
+        case FX::Action::LAUNCHFOFMISSILE: { // 47,
         } break;
-        case dgmPOWERBOOST: { //  53,   //effectID 48  - Consumes power booster charges to increase the available power in the capacitor.
+        case FX::Action::POWERBOOST: { //  53,   //effectID 48  - Consumes power booster charges to increase the available power in the capacitor.
         } break;
-        case dgmTARGETHOSTILES: { // 70,
+        case FX::Action::TARGETHOSTILES: { // 70,
         } break;
-        case dgmTARGETSILENTLY: { // 71,
+        case FX::Action::TARGETSILENTLY: { // 71,
         } break;
-        case dgmTOOLTARGETSKILLS: { // 72,
+        case FX::Action::TOOLTARGETSKILLS: { // 72,
         } break;
-        case dgmVERIFYTARGETGROUP: { // 74,
+        case FX::Action::VERIFYTARGETGROUP: { // 74,
         } break;
         /* unique/special to EVEmu */
-        case dgmSPEEDBOOST: { // effectID 14 - prop mod to call destiny speed updates
-            if ((pSE != nullptr) and (pSE->DestinyMgr())) {
+        case FX::Action::SPEEDBOOST: { // effectID 14 - prop mod to call destiny speed updates
+            if (pSE != nullptr && pSE->DestinyMgr() != nullptr) {
                 if (pSE->SysBubble() == nullptr) {
-                    _log(EFFECTS__ERROR, "FxAction::DoAction(): dgmSPEEDBOOST - SysBubble is null for entity %s(%u). Aborting SpeedBoost.", 
+                    _log(EFFECTS__ERROR, "FxAction::DoAction(): SPEEDBOOST - SysBubble is null for entity %s(%u). Aborting SpeedBoost.",
                          pSE->GetName(), pSE->GetID());
                     return;
                 }
                 pSE->DestinyMgr()->SpeedBoost();
             } else {
-                _log(EFFECTS__ERROR, "FxAction::DoAction(): dgmSPEEDBOOST called with invalid pSE or DestinyMgr");
+                _log(EFFECTS__ERROR, "FxAction::DoAction(): SPEEDBOOST called with invalid pSE or DestinyMgr");
             }
         } break;
         /* these below are special as they are called AFTER the module's cycle */
-        case dgmCARGOSCAN: { //   14,
+        case FX::Action::CARGOSCAN: { //   14,
         } break;
-        case dgmMINE: { //        50,
+        case FX::Action::MINE: { //        50,
         } break;
-        case dgmSHIPSCAN: { //    66,
+        case FX::Action::SHIPSCAN: { //    66,
         } break;
-        case dgmSURVEYSCAN: { //  69,
+        case FX::Action::SURVEYSCAN: { //  69,
         } break;
     }
 
