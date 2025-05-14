@@ -150,17 +150,17 @@ void DroneAIMgr::Return() {
 
 void DroneAIMgr::SetIdle() {
     if (m_state == DroneAI::State::Idle) {
-        _log(DRONE__AI_TRACE, "Drone %s(%u): Already in Idle state — re-processing orbit logic.",
+        _log(DRONE__AI_TRACE, "Drone %s(%u): Already in Idle state — issuing orbit.",
             m_pDrone->GetName(), m_pDrone->GetID());
-        ProcessIdleState();  // Force orbit even if already idle
+        m_pDrone->IdleOrbit(m_assignedShip);
         return;
     }
 
-    _log(DRONE__AI_TRACE, "Drone %s(%u): Entering Idle state.",
+    _log(DRONE__AI_TRACE, "Drone %s(%u): Switching to Idle state and initiating orbit.",
         m_pDrone->GetName(), m_pDrone->GetID());
 
     m_state = DroneAI::State::Idle;
-    this->ProcessIdleState();  // Always start orbit when entering idle
+    m_pDrone->IdleOrbit(m_assignedShip);
 }
 
 void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
