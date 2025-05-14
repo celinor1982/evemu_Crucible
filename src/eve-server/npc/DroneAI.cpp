@@ -149,21 +149,18 @@ void DroneAIMgr::Return() {
 }
 
 void DroneAIMgr::SetIdle() {
-    if (m_state == DroneAI::State::Idle)
+    if (m_state == DroneAI::State::Idle) {
+        _log(DRONE__AI_TRACE, "Drone %s(%u): Already in Idle state — re-processing orbit logic.",
+            m_pDrone->GetName(), m_pDrone->GetID());
+        ProcessIdleState();  // Force orbit even if already idle
         return;
-    // not doing anything....idle.
-    _log(DRONE__AI_TRACE, "Drone %s(%u): SetIdle: returning to idle.",
-         m_pDrone->GetName(), m_pDrone->GetID());
+    }
+
+    _log(DRONE__AI_TRACE, "Drone %s(%u): Entering Idle state.",
+        m_pDrone->GetName(), m_pDrone->GetID());
+
     m_state = DroneAI::State::Idle;
-
-    // disable ewar timers
-    m_webifierTimer.Disable();
-    m_beginFindTarget.Disable();
-    m_mainAttackTimer.Disable();
-    m_warpScramblerTimer.Disable();
-
-    // orbit assigned ship
-    m_pDrone->IdleOrbit(m_assignedShip);
+    ProcessIdleState();  // Always start orbit when entering idle
 }
 
 void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
