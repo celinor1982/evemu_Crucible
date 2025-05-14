@@ -161,8 +161,9 @@ void DroneSE::SaveDrone() {
 
 void DroneSE::RemoveDrone() {
     // this seems to work properly
+    m_killed = true; // mark as inactive
     m_self->Delete();
-    sItemFactory.RemoveItem(m_self->itemID());
+    sItemFactory.RemoveItem(m_self->itemID()); // safer than this->itemID() in destructor
 }
 
 void DroneSE::Launch(ShipSE* pShipSE) {
