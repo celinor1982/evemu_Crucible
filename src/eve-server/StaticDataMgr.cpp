@@ -23,6 +23,7 @@
 #include "station/StationDB.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
+#include <random>
 
 /*
  * DATA__ERROR          # specific "data not found but should be there" msgs
@@ -2226,7 +2227,9 @@ void StaticDataMgr::GetRandomSystemIDs(size_t count, std::vector<uint32>& outSys
     for (const auto& [systemID, data] : m_solSysData) {
         outSystems.push_back(systemID);
     }
-    std::shuffle(outSystems.begin(), outSystems.end(), std::mt19937{std::random_device{}()});
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(outSystems.begin(), outSystems.end(), g);
     if (outSystems.size() > count) {
         outSystems.resize(count);
     }
