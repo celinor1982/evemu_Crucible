@@ -16,6 +16,7 @@
 #include "npc/EntityService.h"
 #include "system/SystemManager.h"
 #include "services/ServiceManager.h"
+#include "npc/Drone.h"
 
 EntityService::EntityService(EVEServiceManager& mgr) :
     BindableService("entity", mgr)
