@@ -98,7 +98,7 @@ void DroneAIMgr::Process() {
             if (distance < 500.0) {
                 m_assignedShip->ScoopDrone(m_pDrone);
                 m_pDrone->GetSystemManager()->RemoveEntity(m_pDrone);
-                SafeDelete(m_pDrone);
+                m_assignedShip->ScoopDrone(m_pDrone);
                 return;
             }
         } break;
@@ -140,7 +140,7 @@ int8 DroneAIMgr::GetState() {
 
 void DroneAIMgr::Return() {
     m_assignedShip = m_pDrone->GetHomeShip();
-    m_pDrone->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
+    m_pDrone->DestinyMgr()->SetSpeedFraction(1.0f); // Use full speed
     m_pDrone->DestinyMgr()->Follow(m_assignedShip, m_entityOrbitRange);
     m_state = DroneAI::State::Departing;
 }
