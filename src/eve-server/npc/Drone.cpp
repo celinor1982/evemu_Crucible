@@ -194,19 +194,8 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
 }
 
 void DroneSE::Abandon() {
-    Offline();  // Stop AI and orbit
-
-    m_ownerID = 0;
-    m_corpID = 0;
-    m_allyID = 0;
-    m_warID = 0;
-    m_controllerID = 0;
-    m_controllerOwnerID = 0;
-
-    m_pClient = nullptr;
-    m_pShipSE = nullptr;
-
-    StateChange();  // Broadcast to clear state from clients
+    SystemEntity::Abandon();
+    Offline();
 }
 
 /*   when drone is scooped up....

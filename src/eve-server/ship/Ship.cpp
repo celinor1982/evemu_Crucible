@@ -2839,29 +2839,11 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
 }
 
 void ShipSE::ScoopDrone(SystemEntity* pSE) {
-    if (!pSE || !pSE->IsDroneSE())
-        return;
-
-    DroneSE* drone = pSE->GetDroneSE();
-
-    // Remove from local drone tracking
-    m_drones.erase(drone->GetID());
-
-    // Disable AI and controller info
-    drone->Offline();
-
-    // Adjust bandwidth load
+    m_drones.erase(pSE->GetID());
+    pSE->GetDroneSE()->Offline();
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
-    load -= drone->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
-    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false);
-
-    // Move the drone item back to the drone bay
-    drone->GetSelf()->Move(m_shipRef->itemID(), flagDroneBay, true);
-
-    // Notify clients and clean up
-    drone->StateChange();
-    drone->GetSystemManager()->RemoveEntity(pSE);
-    SafeDelete(pSE);
+    load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
+    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
 }
 
 void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
