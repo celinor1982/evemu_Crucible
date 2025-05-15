@@ -35,7 +35,7 @@ uint8 EvEMath::Skill::LevelForPoints(uint32 currentSP, uint8 rank)
 
 uint8 EvEMath::Skill::PointsPerMinute(uint8 pAttr, uint8 sAttr)
 {
-    return (pAttr + (0.5f * sAttr));
+    return (pAttr + (3.5f * sAttr));
 }
 
 int64 EvEMath::Skill::StartTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow)
