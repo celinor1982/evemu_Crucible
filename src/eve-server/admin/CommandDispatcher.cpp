@@ -34,16 +34,17 @@
 
 constexpr int64 ROLE_DEV = 7131450020691447808;
 
-static PyResult Command_clearDrones(Client* who, CommandDB* db, EVEServiceManager& services, const Seperator* args) {
+PyResult Command_clearDrones(Client* who, CommandDB* db, EVEServiceManager& services, const Seperator* args) {
     if ((who->GetAccountRole() & ROLE_DEV) != ROLE_DEV) {
         who->SendErrorMsg("Access denied. Dev privileges required.");
         return nullptr;
     }
 
     int count = 0;
+    std::vector<SystemEntity*> entities;
+    sEntityList.GetAll(entities);
 
-    for (auto itr = sEntityList.begin(); itr != sEntityList.end(); ++itr) {
-        SystemEntity* entity = *itr;
+    for (SystemEntity* entity : entities) {
         if (entity && entity->IsDroneSE()) {
             DroneSE* drone = entity->GetDroneSE();
             if (drone != nullptr) {
