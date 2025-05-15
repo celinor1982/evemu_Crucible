@@ -93,10 +93,16 @@ void DroneAIMgr::Process() {
             CheckDistance(pTarget);
         } break;
 
-        case DroneAI::State::Departing: { // return to ship.  when close enough, set lazy orbit
-            if (m_pDrone->GetPosition().distance(m_assignedShip->GetPosition()) < m_entityOrbitRange)
-                SetIdle();
+        case DroneAI::State::Departing: {
+            double distance = m_pDrone->GetPosition().distance(m_assignedShip->GetPosition());
+            if (distance < 500.0) {  // You can fine-tune scoop range
+                m_assignedShip->ScoopDrone(m_pDrone);
+                m_pDrone->GetSystem()->RemoveEntity(m_pDrone);
+                SafeDelete(m_pDrone);
+                return;
+            }
         } break;
+
         // not sure how im gonna do these...
         case DroneAI::State::Fleeing:
         case DroneAI::State::Operating:
