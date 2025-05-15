@@ -16,7 +16,7 @@
 #include "market/MarketProxyService.h"
 
 
-static const char* const BOT_CONFIG_FILE = EVEMU_ROOT "/etc/MarketBot.xml";
+static const char* const BOT_CONFIG_FILE = "/src/utils/config/MarketBot.xml";
 
 
 MarketBotDataMgr::MarketBotDataMgr()
