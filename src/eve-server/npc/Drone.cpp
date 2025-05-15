@@ -137,6 +137,11 @@ void DroneSE::Process() {
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
+
+    if (!IsVisible()) {
+        _log(DRONE__TRACE, "Drone %s(%u): Not visible to bubble — possible despawn?", GetName(), GetID());
+    }
+
 }
 
 // void DroneSE::Process() {
@@ -163,6 +168,8 @@ void DroneSE::RemoveDrone() {
     // this seems to work properly
     m_killed = true; // mark as inactive
     m_self->Delete();
+    _log(DRONE__TRACE, "Drone %s(%u): RemoveDrone() called. Last known position: (%.1f, %.1f, %.1f)", 
+        GetName(), GetID(), x(), y(), z());
     sItemFactory.RemoveItem(m_self->itemID()); // safer than this->itemID() in destructor
 }
 
@@ -220,8 +227,29 @@ void DroneSE::Offline() {
     StateChange();
 }
 
-void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
-    if (pShipSE == nullptr)
+void DroneSE::IdleOrbit(ShipSE* pShipSE) {
+    if (!m_online || m_bubble == nullptr || pShipSE == nullptr)
+        return;
+
+    if (m_orbitRange < 500.0 || m_orbitRange > 25000.0)
+        m_orbitRange = 1250.0;
+
+    double maxVel = m_self->GetAttribute(AttrMaxVelocity).get_float();
+    if (maxVel < 50.0)
+        maxVel = 300.0;
+
+    m_destiny->SetMaxVelocity(maxVel);
+    m_destiny->SetSpeedFraction(0.6f);
+    m_destiny->Orbit(pShipSE, m_orbitRange);
+
+    m_destiny->SetPosition(m_destiny->GetPosition(), true);  // force broadcast
+
+    _log(DRONE__TRACE, "Drone %s(%u): Issued orbit at %.0f m with %.1f m/s velocity.", 
+        GetName(), GetID(), m_orbitRange, maxVel);
+}
+
+// void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
+/*    if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
     if (!m_online)
@@ -232,7 +260,7 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
     m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
-}
+} */
 
 void DroneSE::Abandon() {
     SystemEntity::Abandon();
