@@ -77,10 +77,15 @@ void MarketBotMgr::Process() {
     if (!m_initalized || !m_updateTimer.Check())
         return;
 
-   ExpireOldOrders();
+    ExpireOldOrders();
 
     std::vector<uint32> eligibleSystems = GetEligibleSystems();
     for (uint32 systemID : eligibleSystems) {
+        auto stationItr = sDataMgr.m_stationList.find(systemID);
+        if (stationItr == sDataMgr.m_stationList.end() || stationItr->second.empty()) {
+            _log(MARKET__TRACE, "Skipping system %u: no stations available.", systemID);
+            continue;
+        }
         PlaceBuyOrders(systemID);
         PlaceSellOrders(systemID);
     }
@@ -117,7 +122,25 @@ void MarketBotMgr::ExpireOldOrders() {
 }
 
 void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
-    for (int i = 0; i < sMBotConf.main.OrdersPerRefresh; ++i) {
+    SystemData sysData;
+    if (!sDataMgr.GetSystemData(systemID, sysData)) {
+        _log(MARKET__ERROR, "Failed to get system data for system %u", systemID);
+        return;
+    }
+
+    auto stationItr = sDataMgr.m_stationList.find(systemID);
+    if (stationItr == sDataMgr.m_stationList.end() || stationItr->second.empty()) {
+        _log(MARKET__ERROR, "No stations found for system %u", systemID);
+        return;
+    }
+
+    std::vector<uint32> availableStations = stationItr->second;
+    size_t stationCount = availableStations.size();
+    size_t stationLimit = std::max<size_t>(1, stationCount / 2);
+    std::shuffle(availableStations.begin(), availableStations.end(), std::mt19937{std::random_device{}()});
+
+    for (size_t i = 0; i < std::min<size_t>(stationLimit, sMBotConf.main.OrdersPerRefresh); ++i) {
+        uint32 stationID = availableStations[i];
         uint32 itemID = SelectRandomItemID();
         const ItemType* type = sItemFactory.GetType(itemID);
         if (!type) continue;
@@ -130,8 +153,8 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
 
         Market::SaveData order;
         order.typeID = itemID;
-        order.regionID = sDataMgr.GetSystemRegion(systemID);
-        order.stationID = sDataMgr.GetSystemStation(systemID);
+        order.regionID = sysData.regionID;
+        order.stationID = stationID;
         order.solarSystemID = systemID;
         order.volEntered = quantity;
         order.volRemaining = quantity;
@@ -147,7 +170,25 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
 }
 
 void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
-    for (int i = 0; i < sMBotConf.main.OrdersPerRefresh; ++i) {
+    SystemData sysData;
+    if (!sDataMgr.GetSystemData(systemID, sysData)) {
+        _log(MARKET__ERROR, "Failed to get system data for system %u", systemID);
+        return;
+    }
+
+    auto stationItr = sDataMgr.m_stationList.find(systemID);
+    if (stationItr == sDataMgr.m_stationList.end() || stationItr->second.empty()) {
+        _log(MARKET__ERROR, "No stations found for system %u", systemID);
+        return;
+    }
+
+    std::vector<uint32> availableStations = stationItr->second;
+    size_t stationCount = availableStations.size();
+    size_t stationLimit = std::max<size_t>(1, stationCount / 2);
+    std::shuffle(availableStations.begin(), availableStations.end(), std::mt19937{std::random_device{}()});
+
+    for (size_t i = 0; i < std::min<size_t>(stationLimit, sMBotConf.main.OrdersPerRefresh); ++i) {
+        uint32 stationID = availableStations[i];
         uint32 itemID = SelectRandomItemID();
         const ItemType* type = sItemFactory.GetType(itemID);
         if (!type) continue;
@@ -160,8 +201,8 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
 
         Market::SaveData order;
         order.typeID = itemID;
-        order.regionID = sDataMgr.GetSystemRegion(systemID);
-        order.stationID = sDataMgr.GetSystemStation(systemID);
+        order.regionID = sysData.regionID;
+        order.stationID = stationID;
         order.solarSystemID = systemID;
         order.volEntered = quantity;
         order.volRemaining = quantity;
