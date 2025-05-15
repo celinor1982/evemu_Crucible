@@ -137,11 +137,6 @@ void DroneSE::Process() {
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
-
-    if (!IsVisible()) {
-        _log(DRONE__TRACE, "Drone %s(%u): Not visible to bubble — possible despawn?", GetName(), GetID());
-    }
-
 }
 
 // void DroneSE::Process() {
