@@ -18,7 +18,6 @@
 #include "inventory/InventoryItem.h"
 #include "system/SystemManager.h"
 #include "system/SystemEntity.h"
-#include "utils/Random.h"
 #include <random>
 
 extern ItemFactory* sItemFactory;
@@ -31,6 +30,19 @@ static const std::vector<uint32> VALID_GROUPS = {
 };
 
 static const char* const BOT_CONFIG_FILE = "/src/utils/config/MarketBot.xml";
+
+// helper random generators
+int GetRandomInt(int min, int max) {
+    static thread_local std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> dist(min, max);
+    return dist(rng);
+}
+
+float GetRandomFloat(float min, float max) {
+    static thread_local std::mt19937 rng(std::random_device{}());
+    std::uniform_real_distribution<float> dist(min, max);
+    return dist(rng);
+}
 
 MarketBotDataMgr::MarketBotDataMgr() {
     m_initalized = false;
@@ -58,7 +70,6 @@ int MarketBotMgr::Initialize() {
 
     m_initalized = true;
     sMktBotDataMgr.Initialize();
-
     sLog.Blue("     MarketBotMgr", "Market Bot Manager Initialized.");
     return 1;
 }
@@ -91,22 +102,6 @@ void MarketBotMgr::ExpireOldOrders() {
     sMarketMgr.ExpireBotOrders();
 }
 
-void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
-    for (int i = 0; i < sMBotConf.main.OrdersPerRefresh; ++i) {
-        uint32 itemID = SelectRandomItemID();
-        const ItemType* type = sItemFactory->GetType(itemID);
-        if (!type) continue;
-
-        uint32 quantity = GetRandomQuantity(type->groupID());
-        double price = CalculateBuyPrice(itemID);
-
-        if (price * quantity > sMBotConf.main.MaxISKPerOrder)
-            continue;
-
-        sMarketMgr.CreateMarketOrder(systemID, itemID, quantity, price, true, sMBotConf.main.OrderLifetime, true);
-    }
-}
-
 void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
     for (int i = 0; i < sMBotConf.main.OrdersPerRefresh; ++i) {
         uint32 itemID = SelectRandomItemID();
@@ -136,31 +131,28 @@ uint32 MarketBotMgr::SelectRandomItemID() {
     uint32 itemID = 0;
     const ItemType* type = nullptr;
     do {
-        itemID = MakeRandomInt(10, MARKETBOT_MAX_ITEM_ID);
+        itemID = GetRandomInt(10, MARKETBOT_MAX_ITEM_ID);
         type = sItemFactory->GetType(itemID);
     } while (!type || std::find(VALID_GROUPS.begin(), VALID_GROUPS.end(), type->groupID()) == VALID_GROUPS.end());
     return itemID;
 }
 
 uint32 MarketBotMgr::GetRandomQuantity(uint32 groupID) {
-    // Large quantities for ores, ammo, charges
     if (groupID == 18 || groupID == 20 || groupID == 53 || groupID == 104) {
-        return MakeRandomInt(1000, 1000000);
+        return GetRandomInt(1000, 1000000);
     }
-    // Medium quantities for modules, rigs, etc
     if (groupID == 55 || groupID == 63 || groupID == 70) {
-        return MakeRandomInt(10, 100);
+        return GetRandomInt(10, 100);
     }
-    // Default to small quantity
-    return MakeRandomInt(1, 5);
+    return GetRandomInt(1, 5);
 }
 
 double MarketBotMgr::CalculateBuyPrice(uint32 itemID) {
     const ItemType* type = sItemFactory->GetType(itemID);
-    return type ? type->GetBasePrice() * MakeRandomFloat(0.8f, 1.1f) : 1000.0;
+    return type ? type->GetBasePrice() * GetRandomFloat(0.8f, 1.1f) : 1000.0;
 }
 
 double MarketBotMgr::CalculateSellPrice(uint32 itemID) {
     const ItemType* type = sItemFactory->GetType(itemID);
-    return type ? type->GetBasePrice() * MakeRandomFloat(1.0f, 1.3f) : 1000.0;
+    return type ? type->GetBasePrice() * GetRandomFloat(1.0f, 1.3f) : 1000.0;
 }
