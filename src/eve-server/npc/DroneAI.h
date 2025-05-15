@@ -61,6 +61,9 @@ public:
     void Return();
     void AssignShip(ShipSE* pSE)                        { m_assignedShip = pSE; }
 
+    void SetNeedsInitialIdle(bool val) { m_needsInitialIdle = val; }
+
+
 protected:
     void Attack(SystemEntity* pTarget);
     void SetEngaged(SystemEntity* pTarget);
