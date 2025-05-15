@@ -13,16 +13,17 @@
 #include "market/MarketBotMgr.h"
 #include "market/MarketMgr.h"
 #include "market/MarketProxyService.h"
+#inlcude "market/MarketDB.h"
 #include "inventory/ItemType.h"
 #include "inventory/ItemFactory.h"
 #include "inventory/InventoryItem.h"
+#include "station/StationDataMgr.h"
 #include "system/SystemManager.h"
 #include "system/SystemEntity.h"
 #include <random>
 
 extern ItemFactory* sItemFactory;
 extern SystemManager* sSystemMgr;
-extern MarketMgr sMarketMgr;
 
 static const uint32 MARKETBOT_MAX_ITEM_ID = 30000;
 static const std::vector<uint32> VALID_GROUPS = {
@@ -99,7 +100,23 @@ void MarketBotMgr::RemoveSystem() {
 }
 
 void MarketBotMgr::ExpireOldOrders() {
-    sMarketMgr.ExpireBotOrders();
+    uint64 now = GetFileTimeNow();
+
+    DBQueryResult res;
+    DBResultRow row;
+    if (!DBcore::RunQuery(res,
+        "SELECT orderID FROM market_orders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = 1",
+        now))
+    {
+        _log(MARKET__DB_ERROR, "Failed to query expired bot orders.");
+        return;
+    }
+
+    while (res.GetRow(row)) {
+        uint32 orderID = row.GetUInt(0);
+        MarketDB::DeleteOrder(orderID);
+        _log(MARKET__TRACE, "Expired MarketBot order %u", orderID);
+    }
 }
 
 void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
