@@ -30,49 +30,11 @@
 
 #include "admin/CommandDispatcher.h"
 #include "system/DestinyManager.h"
-#include "npc/Drone.h"
-#include "system/SystemManager.h"
-#include "system/SystemEntity.h"
-
-constexpr int64 ROLE_DEV = 7131450020691447808;
-
-static PyResult Command_clearDrones(Client* who, CommandDB* db, EVEServiceManager& services, const Seperator* args) {
-    if ((who->GetAccountRole() & ROLE_DEV) != ROLE_DEV) {
-        who->SendErrorMsg("Access denied. Dev privileges required.");
-        return nullptr;
-    }
-
-    int count = 0;
-
-    // Loop through valid system ID range (modify as needed)
-    for (uint32 systemID = 30000001; systemID <= 31000000; ++systemID) {
-        SystemManager* sysMgr = sEntityList.FindOrBootSystem(systemID);
-        if (!sysMgr || !sysMgr->IsLoaded()) continue;
-
-        std::map<uint32, SystemEntity*> entities = sysMgr->GetEntities();
-        for (const auto& [id, entity] : entities) {
-            if (entity && entity->IsDroneSE()) {
-                DroneSE* drone = entity->GetDroneSE();
-                if (drone != nullptr) {
-                    drone->RemoveDrone();
-                    ++count;
-                }
-            }
-        }
-    }
-
-    who->SendNotifyMsg("Removed %d drone(s) from all loaded systems.", count);
-    return nullptr;
-}
 
 CommandDispatcher::CommandDispatcher(EVEServiceManager& services)
 : m_services( services )
 {
     m_commands.clear();
-    
-    // Register custom GM commands here
-    AddCommand("cleardrones", "Removes all drones in all systems.", ROLE_DEV,
-        static_cast<CommandFunc>(&Command_clearDrones));
 }
 
 CommandDispatcher::~CommandDispatcher() {
