@@ -31,10 +31,36 @@
 #include "admin/CommandDispatcher.h"
 #include "system/DestinyManager.h"
 
+PyResult Command_clearDrones(Client* who, CommandDB* db, EVEServiceManager& services, const Seperator* args) {
+    // Only allow GMs or higher (you can change role mask if needed)
+    if ((who->GetAccountRole() & Acct::Role::GM) != Acct::Role::GM) {
+        who->SendErrorMsg("Access denied. GM privileges required.");
+        return nullptr;
+    }
+
+    int count = 0;
+
+    for (auto& [id, entity] : sEntityList.entities()) {
+        if (entity->IsDroneSE()) {
+            DroneSE* drone = entity->GetDroneSE();
+            if (drone != nullptr) {
+                drone->RemoveDrone();
+                ++count;
+            }
+        }
+    }
+
+    who->SendNotifyMsg("Removed %d drone(s) from the system.", count);
+    return nullptr;
+}
+
 CommandDispatcher::CommandDispatcher(EVEServiceManager& services)
 : m_services( services )
 {
     m_commands.clear();
+    
+    // Register custom GM commands here
+    AddCommand("cleardrones", "Removes all drones in all systems.", Acct::Role::GM, Command_clearDrones);
 }
 
 CommandDispatcher::~CommandDispatcher() {
