@@ -23,7 +23,6 @@
 #include <random>
 #include <cstdint>
 
-extern ItemFactory* sItemFactory;
 extern SystemManager* sSystemMgr;
 
 static const uint32 MARKETBOT_MAX_ITEM_ID = 30000;
