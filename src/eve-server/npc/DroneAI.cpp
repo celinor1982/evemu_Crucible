@@ -74,17 +74,8 @@ void DroneAIMgr::Process() {
             // check everything in this state.   return to ship?
         } break;
         case DroneAI::State::Idle: {
-            if (m_needsInitialIdle) {
-                _log(DRONE__AI_TRACE, "Drone %s(%u): Forcing initial IdleOrbit call", m_pDrone->GetName(), m_pDrone->GetID());
-                SetIdle();
-                m_needsInitialIdle = false;
-                return;
-            }
-            // already idle, nothing else to do
-        } break;
-        /*case DroneAI::State::Idle: {
             // orbiting controlling ship
-        } break;*/
+        } break;
         case DroneAI::State::Engaged: {
             //NOTE: getting our pTarget like this is pretty weak...
             SystemEntity* pTarget = m_pDrone->TargetMgr()->GetFirstTarget(true);
@@ -149,27 +140,6 @@ void DroneAIMgr::Return() {
 }
 
 void DroneAIMgr::SetIdle() {
-    if (m_state == DroneAI::State::Idle) {
-        _log(DRONE__AI_TRACE, "Drone %s(%u): Already idle — reissuing IdleOrbit.",
-             m_pDrone->GetName(), m_pDrone->GetID());
-        m_pDrone->IdleOrbit(m_assignedShip);  // ? Always call orbit
-        return;
-    }
-
-    _log(DRONE__AI_TRACE, "Drone %s(%u): SetIdle: returning to idle.",
-         m_pDrone->GetName(), m_pDrone->GetID());
-
-    m_state = DroneAI::State::Idle;
-
-    m_webifierTimer.Disable();
-    m_beginFindTarget.Disable();
-    m_mainAttackTimer.Disable();
-    m_warpScramblerTimer.Disable();
-
-    m_pDrone->IdleOrbit(m_assignedShip);
-}
-
-/*void DroneAIMgr::SetIdle() {
     if (m_state == DroneAI::State::Idle)
         return;
     // not doing anything....idle.
@@ -185,7 +155,7 @@ void DroneAIMgr::SetIdle() {
 
     // orbit assigned ship
     m_pDrone->IdleOrbit(m_assignedShip);
-}*/
+}
 
 void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
     if (m_state == DroneAI::State::Engaged)

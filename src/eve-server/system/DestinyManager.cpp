@@ -231,11 +231,9 @@ void DestinyManager::ProcessState() {
                 return;
             } else if (m_timeFraction < 0.749 && m_userSpeedFraction < 0.7499) {
                 SetSpeedFraction(1.0f, true);
-            } else if (((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp + 2.0) &&
-                       (degrees > WARP_ALIGNMENT || m_timeFraction < 0.749)) {
+            } else if ((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp + 0.3) {
+                // catchall for turn checks messed up, and m_moveTime > ship align time
                 if (mySE->HasPilot()) {
-                    _log(DESTINY__WARNING, "Warp Debug - Align: %.2f°, TimeFraction: %.3f, UserSpeedFraction: %.3f", 
-                                degrees, m_timeFraction, m_userSpeedFraction);
                     _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > shipTimeToWarp.",  \
                                 mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
                 } else {
@@ -1738,13 +1736,7 @@ void DestinyManager::WarpUpdate(double currentShipSpeed) {
     //  this method is ~1000m off actual.  could be due to rounding.   -allan 9Jan15
     m_velocity = (m_warpState->warp_vector * currentShipSpeed);
     SetPosition(m_targetPoint - (m_warpState->warp_vector * m_targetDistance));
-    // Prevents overshooting warp point
-    double remaining = m_position.distance(m_targetPoint);
-    if (remaining < 100.0) {
-        WarpStop(currentShipSpeed);
-        return;
-    }
-    
+
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
         _log(
             DESTINY__WARP_TRACE,
@@ -1796,7 +1788,7 @@ void DestinyManager::WarpStop(double currentShipSpeed) {
         _log(AUTOPILOT__MESSAGE, "Destiny::WarpStop(): %s(%u) - Warp complete.", mySE->GetName(), mySE->GetID());
         mySE->GetPilot()->SetLoginWarpComplete();
     }
-    // m_targetPoint += (m_warpState->warp_vector *10000); // Removed, this is causing ships to warp 10km beyond intended stopping point, causing the ships to flip 180 or bounce off objects.
+    m_targetPoint += (m_warpState->warp_vector *10000);
     // SetSpeedFraction() checks for m_state = Warp and warpstate != null to set decel variables correctly with warp decel.
     //   have to call this BEFORE deleting or reseting m_state or WarpState.
     SetSpeedFraction(0.0f);
@@ -2381,19 +2373,6 @@ PyResult DestinyManager::AttemptDockOperation() {
     Client *pClient = mySE->GetPilot();
     uint32 stationID = pClient->GetDockStationID();
     SystemEntity *station = mySE->SystemMgr()->GetSE(stationID);
-
-    if (mySE->HasPilot() && mySE->GetPilot()->IsDockCooldownActive()) {
-        _log(DESTINY__WARNING, "Dock attempt rejected: cooldown active for %s", mySE->GetName());
-        mySE->GetPilot()->SendNotifyMsg("You cannot dock yet. Please wait a moment after undocking.");
-        return nullptr;
-    }    
-
-    if (mySE->SysBubble() == nullptr) {
-        _log(DESTINY__ERROR, "AttemptDockOperation failed: %s has no bubble.", mySE->GetName());
-        if (mySE->HasPilot())
-            mySE->GetPilot()->SendNotifyMsg("Unable to dock: system not ready. Try again shortly.");
-        return nullptr;
-    }
 
     if (station == nullptr) {
         codelog(CLIENT__ERROR, "%s: Station %u not found.", pClient->GetName(), stationID);

@@ -114,27 +114,14 @@ void DroneSE::SetOwner(Client* pClient) {
 }
 
 void DroneSE::Process() {
-    _log(DRONE__TRACE, "Drone %s(%u): Destiny mode unknown | pos (%.1f, %.1f, %.1f)",
-         GetName(), GetID(), x(), y(), z());
-
     if (m_killed)
         return;
-
     double profileStartTime(GetTimeUSeconds());
 
-    // Call base system entity logic (handles targeting, destiny updates, etc.)
+    /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 
-    // Delayed activation check
-    // Wait until the drone is in a valid bubble before setting it fully online
-    if (m_readyToOrbit && m_bubble != nullptr) {
-        _log(DRONE__TRACE, "Drone %s(%u): Now going online and activating AI orbit", GetName(), GetID());
-        m_online = true;
-        StateChange();           // Broadcast online state to clients
-        m_readyToOrbit = false;  // Clear the delayed activation flag
-    }
-
-    // Run drone AI logic once it's fully online
+    /** @todo (allan) finish drone AI and processing */
     if (m_online)
         m_AI->Process();
 
@@ -142,49 +129,17 @@ void DroneSE::Process() {
         sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
 }
 
-// void DroneSE::Process() {
-//    if (m_killed)
-//        return;
-//    double profileStartTime(GetTimeUSeconds());
-
-    /*  Enable base call to Process Targeting and Movement  */
-//    SystemEntity::Process();
-
-    /** @todo (allan) finish drone AI and processing */
-//    if (m_online)
-//        m_AI->Process();
-
-//    if (sConfig.debug.UseProfiling)
-//        sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
-//} 
-
 void DroneSE::SaveDrone() {
     m_self->SaveItem();
 }
 
 void DroneSE::RemoveDrone() {
     // this seems to work properly
-    m_killed = true; // mark as inactive
     m_self->Delete();
-    _log(DRONE__TRACE, "Drone %s(%u): RemoveDrone() called. Last known position: (%.1f, %.1f, %.1f)", 
-        GetName(), GetID(), x(), y(), z());
-    sItemFactory.RemoveItem(m_self->itemID()); // safer than this->itemID() in destructor
+    delete this;
 }
 
 void DroneSE::Launch(ShipSE* pShipSE) {
-    m_pShipSE = pShipSE;
-    m_controllerID = pShipSE->GetID();
-    m_controllerOwnerID = pShipSE->GetOwnerID();
-
-    m_system->AddEntity(this);
-    assert(m_bubble != nullptr);
-
-    // Delay going online/orbit until safe
-    Online(pShipSE);  // will now only set `m_readyToOrbit`
-    // IdleOrbit will now be triggered inside Process() via AI->SetIdle() only AFTER safe bubble entry
-}
-
-/** void DroneSE::Launch(ShipSE* pShipSE) {
     m_pShipSE = pShipSE;
 
     m_controllerID = pShipSE->GetID();
@@ -193,30 +148,17 @@ void DroneSE::Launch(ShipSE* pShipSE) {
     m_system->AddEntity(this);
 
     assert (m_bubble != nullptr);
-}*/
-
-void DroneSE::Online(ShipSE* pShipSE /*= nullptr*/) {
-    if (pShipSE == nullptr)
-        pShipSE = m_pShipSE;
-
-    m_AI->AssignShip(pShipSE);
-
-    // Delay going fully online until Process() confirms bubble assignment
-    m_readyToOrbit = true;
-    m_AI->SetNeedsInitialIdle(true);
-
-    _log(DRONE__TRACE, "Drone %s(%u): Online request received — awaiting bubble to activate orbit.", GetName(), GetID());
 }
 
-//void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
-/*    m_online = true;
+void DroneSE::Online(ShipSE* pShipSE/*nullptr*/) {
+    m_online = true;
     StateChange();
 
     if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
     m_AI->AssignShip(pShipSE);
-}*/
+}
 
 void DroneSE::Offline() {
     // this is called by abandon also
@@ -226,35 +168,8 @@ void DroneSE::Offline() {
     StateChange();
 }
 
-void DroneSE::IdleOrbit(ShipSE* pShipSE) {
-    if (!m_online || m_bubble == nullptr || pShipSE == nullptr)
-        return;
-
-    uint32 groupID = m_self->groupID();
-
-    // Mining drones — just hover near the ship (follow but no orbit)
-    if (groupID == 101) {
-        m_destiny->Follow(pShipSE, 100.0f);  // minimal distance to stay close
-        _log(DRONE__TRACE, "Mining drone %s(%u): Following ship instead of orbiting", GetName(), GetID());
-        return;
-    }
-
-    // Support drones — follow at mid-distance
-    if (groupID == 102 || groupID == 103 || groupID == 104 || groupID == 105 || groupID == 106) {
-        m_destiny->Follow(pShipSE, 1250.0f);  // maintain orbit range but using Follow()
-        _log(DRONE__TRACE, "Support drone %s(%u): Following ship (group %u)", GetName(), GetID(), groupID);
-        return;
-    }
-
-    // Default for combat drones
-    m_destiny->SetMaxVelocity(m_self->GetAttribute(AttrMaxVelocity).get_float());
-    m_destiny->SetSpeedFraction(0.6f);
-    m_destiny->Orbit(pShipSE, m_orbitRange);
-    _log(DRONE__TRACE, "Combat drone %s(%u): Orbiting ship %u at %.1f m", GetName(), GetID(), pShipSE->GetID(), m_orbitRange);
-}
-
-//void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
-/*    if (pShipSE == nullptr)
+void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
+    if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
     if (!m_online)
@@ -265,7 +180,7 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE) {
     m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
-}*/
+}
 
 void DroneSE::Abandon() {
     SystemEntity::Abandon();

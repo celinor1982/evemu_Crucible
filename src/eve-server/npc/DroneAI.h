@@ -61,9 +61,6 @@ public:
     void Return();
     void AssignShip(ShipSE* pSE)                        { m_assignedShip = pSE; }
 
-    void SetNeedsInitialIdle(bool val) { m_needsInitialIdle = val; }
-
-
 protected:
     void Attack(SystemEntity* pTarget);
     void SetEngaged(SystemEntity* pTarget);
@@ -99,8 +96,6 @@ private:
     Timer m_beginFindTarget;
     Timer m_warpScramblerTimer;
     Timer m_webifierTimer;
-
-    bool m_needsInitialIdle = true;  // Ensure initial IdleOrbit is called once
 };
 
 #endif  // __EVEMU_SHIP_DRONEAI_H__

@@ -2829,7 +2829,6 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     load += dRef->GetAttribute(AttrDroneBandwidthUsed);
     if (load <= m_shipRef->GetAttribute(AttrDroneBandwidth)) {
         pDrone->Online();
-        // pDrone->GetAI()->ProcessIdleState();  // this will force orbit
         pDrone->GetAI()->SetIdle();
         m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
         return true;
