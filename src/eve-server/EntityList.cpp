@@ -47,7 +47,6 @@
 #include "system/cosmicMgrs/WormholeMgr.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 #include "corporation/CorporationDB.h"
-#include "npc/Drone.h"
 
 EntityList::EntityList()
 : m_services(nullptr),
@@ -220,25 +219,6 @@ void EntityList::Process() {
 
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
-
-        // === One-time drone clearing block ===
-        for (auto& [sysID, sysMgr] : m_systems) {
-            if (sysMgr == nullptr)
-                continue;
-
-            std::map<uint32, SystemEntity*> entities = sysMgr->GetEntities();
-            for (auto& [id, entity] : entities) {
-                if (entity->IsDroneSE()) {
-                    DroneSE* drone = entity->GetDroneSE();
-                    if (drone != nullptr) {
-                        _log(ITEM__TRACE, "EntityList::Process - Removing Drone %s(%u)", drone->GetName(), drone->GetID());
-                        drone->RemoveDrone();
-                    }
-                }
-            }
-        }
-        // === End drone clearing block ===
-
         double profileStartTime(GetTimeUSeconds());
 
         ++m_stamp;
