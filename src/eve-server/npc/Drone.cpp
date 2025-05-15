@@ -223,8 +223,34 @@ void DroneSE::Offline() {
     StateChange();
 }
 
-void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
-    if (pShipSE == nullptr)
+void DroneSE::IdleOrbit(ShipSE* pShipSE) {
+    if (!m_online || m_bubble == nullptr || pShipSE == nullptr)
+        return;
+
+    uint32 groupID = m_self->groupID();
+
+    if (groupID == 101) {
+        // Mining drone — do not orbit, fallback state only
+        _log(DRONE__TRACE, "Mining drone %s(%u): Skipping orbit", GetName(), GetID());
+        return;
+    }
+
+    if (groupID >= 102 && groupID <= 106) {
+        // E-War / Logistic / Utility drones — fallback follow instead of orbit
+        m_destiny->Follow(pShipSE, m_orbitRange);
+        _log(DRONE__TRACE, "Support drone %s(%u): Following ship %u", GetName(), GetID(), pShipSE->GetID());
+        return;
+    }
+
+    // Combat drone — normal orbit
+    m_destiny->SetMaxVelocity(m_self->GetAttribute(AttrMaxVelocity).get_float());
+    m_destiny->SetSpeedFraction(0.6f);
+    m_destiny->Orbit(pShipSE, m_orbitRange);
+    _log(DRONE__TRACE, "Combat drone %s(%u): Orbiting ship %u at %.1f m", GetName(), GetID(), pShipSE->GetID(), m_orbitRange);
+}
+
+//void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
+/*    if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
     if (!m_online)
@@ -235,7 +261,7 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
     m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
-}
+}*/
 
 void DroneSE::Abandon() {
     SystemEntity::Abandon();
