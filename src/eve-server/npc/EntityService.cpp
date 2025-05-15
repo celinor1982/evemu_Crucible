@@ -328,7 +328,23 @@ PyResult EntityBound::CmdReturnBay(PyCallArgs &call, PyList* droneIDs) {
     _log(DRONE__TRACE, "EntityBound::Handle_CmdReturnBay()");
     call.Dump(DRONE__DUMP);
 
-    call.client->SendNotifyMsg("Drone Control is not implemented yet.");
+    PyList::const_iterator it = droneIDs->begin();
+    for (; it != droneIDs->end(); ++it) {
+        if (!(*it)->IsInt()) continue;
+        uint32 droneID = (*it)->AsInt()->value();
+        SystemEntity* se = m_sysMgr->GetSE(droneID);
+        if (se && se->IsDroneSE()) {
+            DroneSE* drone = se->GetDroneSE();
+            if (drone->GetOwner() == call.client) {
+                call.client->GetShipSE()->ScoopDrone(se);
+                m_sysMgr->RemoveEntity(se);
+                SafeDelete(se);
+            }
+        }
+    }
+    return PyStatic.mtDict();
+
+//    call.client->SendNotifyMsg("Drone Control is not implemented yet.");
 
     // returns nodeID and timestamp and dict of error msg
     /*
@@ -342,7 +358,7 @@ PyResult EntityBound::CmdReturnBay(PyCallArgs &call, PyList* droneIDs) {
         tuple1->SetItem(1, dict);
     return tuple1;
     */
-    return new PyDict();
+//    return new PyDict();
 }
 
 PyResult EntityBound::CmdAbandonDrone(PyCallArgs &call, PyList* droneIDs) {
@@ -357,8 +373,16 @@ PyResult EntityBound::CmdAbandonDrone(PyCallArgs &call, PyList* droneIDs) {
     _log(DRONE__TRACE, "EntityBound::Handle_CmdAbandonDrone()");
     call.Dump(DRONE__DUMP);
 
-    call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    PyList::const_iterator it = droneIDs->begin();
+    for (; it != droneIDs->end(); ++it) {
+        if (!(*it)->IsInt()) continue;
+        uint32 droneID = (*it)->AsInt()->value();
+        SystemEntity* se = m_sysMgr->GetSE(droneID);
+        if (se != nullptr && se->IsDroneSE()) {
+            se->GetDroneSE()->Abandon();
+        }
+    }
+    return PyStatic.mtDict();
 }
 
 PyResult EntityBound::CmdReconnectToDrones(PyCallArgs &call, PyList* droneCandidates) {
@@ -374,6 +398,19 @@ PyResult EntityBound::CmdReconnectToDrones(PyCallArgs &call, PyList* droneCandid
     _log(DRONE__TRACE, "EntityBound::Handle_CmdReconnectToDrones()");
     call.Dump(DRONE__DUMP);
 
-    call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return new PyDict();
+    PyList::const_iterator it = droneCandidates->begin();
+    for (; it != droneCandidates->end(); ++it) {
+        if (!(*it)->IsInt()) continue;
+        uint32 droneID = (*it)->AsInt()->value();
+        SystemEntity* se = m_sysMgr->GetSE(droneID);
+        if (se != nullptr && se->IsDroneSE()) {
+            DroneSE* drone = se->GetDroneSE();
+            if (drone->GetOwner() == nullptr && drone->GetOwnerID() == call.client->GetCharacterID()) {
+                drone->SetOwner(call.client);
+                drone->Online(call.client->GetShipSE());
+                drone->StateChange();
+            }
+        }
+    }
+    return PyStatic.mtDict();
 }
