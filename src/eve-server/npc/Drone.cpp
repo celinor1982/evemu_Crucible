@@ -222,29 +222,8 @@ void DroneSE::Offline() {
     StateChange();
 }
 
-void DroneSE::IdleOrbit(ShipSE* pShipSE) {
-    if (!m_online || m_bubble == nullptr || pShipSE == nullptr)
-        return;
-
-    if (m_orbitRange < 500.0 || m_orbitRange > 25000.0)
-        m_orbitRange = 1250.0;
-
-    double maxVel = m_self->GetAttribute(AttrMaxVelocity).get_float();
-    if (maxVel < 50.0)
-        maxVel = 300.0;
-
-    m_destiny->SetMaxVelocity(maxVel);
-    m_destiny->SetSpeedFraction(0.6f);
-    m_destiny->Orbit(pShipSE, m_orbitRange);
-
-    m_destiny->SetPosition(m_destiny->GetPosition(), true);  // force broadcast
-
-    _log(DRONE__TRACE, "Drone %s(%u): Issued orbit at %.0f m with %.1f m/s velocity.", 
-        GetName(), GetID(), m_orbitRange, maxVel);
-}
-
-// void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
-/*    if (pShipSE == nullptr)
+void DroneSE::IdleOrbit(ShipSE* pShipSE/*nullptr*/) {
+    if (pShipSE == nullptr)
         pShipSE = m_pShipSE;
 
     if (!m_online)
@@ -255,7 +234,7 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE) {
     m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
-} */
+}
 
 void DroneSE::Abandon() {
     SystemEntity::Abandon();
