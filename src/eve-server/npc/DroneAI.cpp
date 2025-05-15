@@ -95,9 +95,9 @@ void DroneAIMgr::Process() {
 
         case DroneAI::State::Departing: {
             double distance = m_pDrone->GetPosition().distance(m_assignedShip->GetPosition());
-            if (distance < 500.0) {  // You can fine-tune scoop range
+            if (distance < 500.0) {
                 m_assignedShip->ScoopDrone(m_pDrone);
-                m_pDrone->GetSystem()->RemoveEntity(m_pDrone);
+                m_pDrone->GetSystemManager()->RemoveEntity(m_pDrone);
                 SafeDelete(m_pDrone);
                 return;
             }

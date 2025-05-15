@@ -111,6 +111,7 @@ public:
     void SetTarget(SystemEntity* pSE = nullptr)         { (pSE == nullptr ? 0 : m_targetID = pSE->GetID()); }
 
     ShipSE* GetHomeShip()                               { return m_pShipSE; }
+    SystemManager* GetSystemManager() const             { return m_system; }
 
 protected:
     Client* m_pClient;          //we do not own this
