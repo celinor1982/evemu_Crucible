@@ -114,10 +114,8 @@ void DroneSE::SetOwner(Client* pClient) {
 }
 
 void DroneSE::Process() {
-    _log(DRONE__TRACE, "Drone %s(%u): Destiny state %d | pos (%.1f, %.1f, %.1f)", 
-        GetName(), GetID(), m_destiny->GetBall()->GetMode(), 
-        x(), y(), z());
-
+    _log(DRONE__TRACE, "Drone %s(%u): Destiny mode unknown | pos (%.1f, %.1f, %.1f)",
+         GetName(), GetID(), x(), y(), z());
 
     if (m_killed)
         return;
