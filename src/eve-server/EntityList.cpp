@@ -222,19 +222,20 @@ void EntityList::Process() {
     if (m_stampTimer.Check()) {
 
         // === One-time drone clearing block ===
-        static bool clearDronesOnce = true;
-        if (clearDronesOnce) {
-            clearDronesOnce = false;  // only run once
-            int cleared = 0;
-                for (auto& [id, entity] : m_entities) {
-                    if (entity->IsDroneSE()) {
-                        DroneSE* drone = entity->GetDroneSE();
-                        if (drone != nullptr) {
-                            drone->RemoveDrone();
-                        }
+        for (auto& [sysID, sysMgr] : m_systems) {
+            if (sysMgr == nullptr)
+                continue;
+
+            std::map<uint32, SystemEntity*> entities = sysMgr->GetEntities();
+            for (auto& [id, entity] : entities) {
+                if (entity->IsDroneSE()) {
+                    DroneSE* drone = entity->GetDroneSE();
+                    if (drone != nullptr) {
+                        _log(ITEM__TRACE, "EntityList::Process - Removing Drone %s(%u)", drone->GetName(), drone->GetID());
+                        drone->RemoveDrone();
                     }
                 }
-            _log(SERVER__INFO, "EntityList::Process() - Cleared %d drones from space.", cleared);
+            }
         }
         // === End drone clearing block ===
 
