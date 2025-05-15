@@ -219,6 +219,25 @@ void EntityList::Process() {
 
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
+
+        // === One-time drone clearing block ===
+        static bool clearDronesOnce = true;
+        if (clearDronesOnce) {
+            clearDronesOnce = false;  // only run once
+            int cleared = 0;
+            for (auto& [id, entity] : entities()) {
+                if (entity->IsDroneSE()) {
+                    DroneSE* drone = entity->GetDroneSE();
+                    if (drone != nullptr) {
+                        drone->RemoveDrone();
+                        ++cleared;
+                    }
+                }
+            }
+            _log(SERVER__INFO, "EntityList::Process() - Cleared %d drones from space.", cleared);
+        }
+        // === End drone clearing block ===
+
         double profileStartTime(GetTimeUSeconds());
 
         ++m_stamp;
