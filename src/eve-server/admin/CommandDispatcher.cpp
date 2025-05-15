@@ -44,8 +44,10 @@ static PyResult Command_clearDrones(Client* who, CommandDB* db, EVEServiceManage
 
     int count = 0;
 
-    for (const auto& [systemID, sysMgr] : sEntityList.m_systems) {
-        if (!sysMgr) continue;
+    // Loop through valid system ID range (modify as needed)
+    for (uint32 systemID = 30000001; systemID <= 31000000; ++systemID) {
+        SystemManager* sysMgr = sEntityList.FindOrBootSystem(systemID);
+        if (!sysMgr || !sysMgr->IsLoaded()) continue;
 
         std::map<uint32, SystemEntity*> entities = sysMgr->GetEntities();
         for (const auto& [id, entity] : entities) {
@@ -69,7 +71,8 @@ CommandDispatcher::CommandDispatcher(EVEServiceManager& services)
     m_commands.clear();
     
     // Register custom GM commands here
-    AddCommand("cleardrones", "Removes all drones in all systems.", ROLE_DEV, &Command_clearDrones);
+    AddCommand("cleardrones", "Removes all drones in all systems.", ROLE_DEV,
+        static_cast<CommandFunc>(&Command_clearDrones));
 }
 
 CommandDispatcher::~CommandDispatcher() {
