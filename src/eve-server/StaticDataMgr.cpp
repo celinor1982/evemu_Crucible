@@ -2211,3 +2211,23 @@ void StaticDataMgr::AddOutpost(StationData &stData)
         m_stationSystem.emplace(stData.stationID, stData.systemID);
     }
 }
+
+bool StaticDataMgr::GetStationListForSystem(uint32 systemID, std::vector<uint32>& stations) const {
+    auto itr = m_stationList.find(systemID);
+    if (itr != m_stationList.end() && !itr->second.empty()) {
+        stations = itr->second;
+        return true;
+    }
+    return false;
+}
+
+void StaticDataMgr::GetRandomSystemIDs(size_t count, std::vector<uint32>& outSystems) const {
+    outSystems.clear();
+    for (const auto& [systemID, data] : m_solSysData) {
+        outSystems.push_back(systemID);
+    }
+    std::shuffle(outSystems.begin(), outSystems.end(), std::mt19937{std::random_device{}()});
+    if (outSystems.size() > count) {
+        outSystems.resize(count);
+    }
+}

@@ -81,10 +81,10 @@ void MarketBotMgr::Process() {
 
     std::vector<uint32> eligibleSystems = GetEligibleSystems();
     for (uint32 systemID : eligibleSystems) {
-        auto stationItr = sDataMgr.m_stationList.find(systemID);
-        if (stationItr == sDataMgr.m_stationList.end() || stationItr->second.empty()) {
-            _log(MARKET__TRACE, "Skipping system %u: no stations available.", systemID);
-            continue;
+        std::vector<uint32> availableStations;
+        if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
+            _log(MARKET__ERROR, "No stations found for system %u", systemID);
+            return;
         }
         PlaceBuyOrders(systemID);
         PlaceSellOrders(systemID);
@@ -128,8 +128,8 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         return;
     }
 
-    auto stationItr = sDataMgr.m_stationList.find(systemID);
-    if (stationItr == sDataMgr.m_stationList.end() || stationItr->second.empty()) {
+    std::vector<uint32> availableStations;
+    if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
         _log(MARKET__ERROR, "No stations found for system %u", systemID);
         return;
     }
@@ -176,8 +176,8 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         return;
     }
 
-    auto stationItr = sDataMgr.m_stationList.find(systemID);
-    if (stationItr == sDataMgr.m_stationList.end() || stationItr->second.empty()) {
+    std::vector<uint32> availableStations;
+    if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
         _log(MARKET__ERROR, "No stations found for system %u", systemID);
         return;
     }
