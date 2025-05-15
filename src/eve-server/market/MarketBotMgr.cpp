@@ -21,6 +21,7 @@
 #include "system/SystemManager.h"
 #include "system/SystemEntity.h"
 #include <random>
+#include <cstdint>
 
 extern ItemFactory* sItemFactory;
 extern SystemManager* sSystemMgr;
@@ -51,15 +52,12 @@ MarketBotDataMgr::MarketBotDataMgr() {
 
 int MarketBotDataMgr::Initialize() {
     m_initalized = true;
-
-    /* load current data */
-    sLog.Blue(" MarketBotDataMgr", "Market Bot Data Manager Initialized.");
+    sLog.Blue(" MarketBotDataMgr", "Market Bot Data Manager Initialized."); // load current data
     return 1;
 }
 
 MarketBotMgr::MarketBotMgr()
-: m_updateTimer(20 * 60 * 1000)  // default 20 minutes
-{
+: m_updateTimer(20 * 60 * 1000) { // default 20 minutes
     m_initalized = false;
 }
 
@@ -80,7 +78,7 @@ void MarketBotMgr::Process() {
     if (!m_initalized || !m_updateTimer.Check())
         return;
 
-    ExpireOldOrders();
+   ExpireOldOrders();
 
     std::vector<uint32> eligibleSystems = GetEligibleSystems();
     for (uint32 systemID : eligibleSystems) {
@@ -100,7 +98,7 @@ void MarketBotMgr::RemoveSystem() {
 }
 
 void MarketBotMgr::ExpireOldOrders() {
-    uint64 now = GetFileTimeNow();
+    uint64_t now = GetFileTimeNow();
 
     DBQueryResult res;
     DBResultRow row;
@@ -119,10 +117,40 @@ void MarketBotMgr::ExpireOldOrders() {
     }
 }
 
+void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
+    for (int i = 0; i < sMBotConf.main.OrdersPerRefresh; ++i) {
+        uint32 itemID = SelectRandomItemID();
+        const ItemType* type = sItemFactory.GetType(itemID);
+        if (!type) continue;
+
+        uint32 quantity = GetRandomQuantity(type->groupID());
+        double price = CalculateBuyPrice(itemID);
+
+        if (price * quantity > sMBotConf.main.MaxISKPerOrder)
+            continue;
+
+        Market::SaveData order;
+        order.typeID = itemID;
+        order.regionID = sDataMgr.GetSystemRegion(systemID);
+        order.stationID = sDataMgr.GetSystemStation(systemID);
+        order.solarSystemID = systemID;
+        order.volEntered = quantity;
+        order.volRemaining = quantity;
+        order.price = price;
+        order.duration = sMBotConf.main.OrderLifetime;
+        order.bid = true;
+        order.issued = GetFileTimeNow();
+        order.isCorp = false;
+        order.ownerID = 1; // NPC corp owner
+
+        MarketDB::StoreOrder(order);
+    }
+}
+
 void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
     for (int i = 0; i < sMBotConf.main.OrdersPerRefresh; ++i) {
         uint32 itemID = SelectRandomItemID();
-        const ItemType* type = sItemFactory->GetType(itemID);
+        const ItemType* type = sItemFactory.GetType(itemID);
         if (!type) continue;
 
         uint32 quantity = GetRandomQuantity(type->groupID());
@@ -131,17 +159,28 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         if (price * quantity > sMBotConf.main.MaxISKPerOrder)
             continue;
 
-        sMarketMgr.CreateMarketOrder(systemID, itemID, quantity, price, false, sMBotConf.main.OrderLifetime, true);
+        Market::SaveData order;
+        order.typeID = itemID;
+        order.regionID = sDataMgr.GetSystemRegion(systemID);
+        order.stationID = sDataMgr.GetSystemStation(systemID);
+        order.solarSystemID = systemID;
+        order.volEntered = quantity;
+        order.volRemaining = quantity;
+        order.price = price;
+        order.duration = sMBotConf.main.OrderLifetime;
+        order.bid = false;
+        order.issued = GetFileTimeNow();
+        order.isCorp = false;
+        order.ownerID = 1; // NPC corp owner
+
+        MarketDB::StoreOrder(order);
     }
 }
 
 std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
     std::vector<uint32> systemIDs;
-    for (const auto& [id, sys] : sSystemMgr->GetSystems()) {
-        systemIDs.push_back(id);
-    }
-    std::shuffle(systemIDs.begin(), systemIDs.end(), std::mt19937{ std::random_device{}() });
-    return std::vector<uint32>(systemIDs.begin(), systemIDs.begin() + std::min<size_t>(5, systemIDs.size()));
+    sDataMgr.GetRandomSystemIDs(5, systemIDs); // pulls a randomized list of systems
+    return systemIDs;
 }
 
 uint32 MarketBotMgr::SelectRandomItemID() {
@@ -149,7 +188,7 @@ uint32 MarketBotMgr::SelectRandomItemID() {
     const ItemType* type = nullptr;
     do {
         itemID = GetRandomInt(10, MARKETBOT_MAX_ITEM_ID);
-        type = sItemFactory->GetType(itemID);
+        type = sItemFactory.GetType(itemID);
     } while (!type || std::find(VALID_GROUPS.begin(), VALID_GROUPS.end(), type->groupID()) == VALID_GROUPS.end());
     return itemID;
 }
@@ -165,11 +204,11 @@ uint32 MarketBotMgr::GetRandomQuantity(uint32 groupID) {
 }
 
 double MarketBotMgr::CalculateBuyPrice(uint32 itemID) {
-    const ItemType* type = sItemFactory->GetType(itemID);
-    return type ? type->GetBasePrice() * GetRandomFloat(0.8f, 1.1f) : 1000.0;
+    const ItemType* type = sItemFactory.GetType(itemID);
+    return type ? type->basePrice() * GetRandomFloat(0.8f, 1.1f) : 1000.0;
 }
 
 double MarketBotMgr::CalculateSellPrice(uint32 itemID) {
-    const ItemType* type = sItemFactory->GetType(itemID);
-    return type ? type->GetBasePrice() * GetRandomFloat(1.0f, 1.3f) : 1000.0;
+    const ItemType* type = sItemFactory.GetType(itemID);
+    return type ? type->basePrice() * GetRandomFloat(1.0f, 1.3f) : 1000.0;
 }
