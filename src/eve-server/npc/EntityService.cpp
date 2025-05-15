@@ -329,20 +329,21 @@ PyResult EntityBound::CmdReturnBay(PyCallArgs &call, PyList* droneIDs) {
     _log(DRONE__TRACE, "EntityBound::Handle_CmdReturnBay()");
     call.Dump(DRONE__DUMP);
 
-    PyList::const_iterator it = droneIDs->begin();
-    for (; it != droneIDs->end(); ++it) {
+    Client* client = call.client;
+    for (auto it = droneIDs->begin(); it != droneIDs->end(); ++it) {
         if (!(*it)->IsInt()) continue;
         uint32 droneID = (*it)->AsInt()->value();
+
         SystemEntity* se = m_sysMgr->GetSE(droneID);
-        if (se && se->IsDroneSE()) {
-            DroneSE* drone = se->GetDroneSE();
-            if (drone->GetOwner() == call.client) {
-                call.client->GetShipSE()->ScoopDrone(se);
-                m_sysMgr->RemoveEntity(se);
-                SafeDelete(se);
-            }
-        }
+        if (!se || !se->IsDroneSE()) continue;
+
+        DroneSE* drone = se->GetDroneSE();
+        if (drone->GetOwner() != client) continue;
+
+        // Set AI to return to ship. Drone will be scooped once in range by ShipSE::ScoopDrone
+        drone->GetAI()->Return();
     }
+
     return PyStatic.mtDict();
 
 //    call.client->SendNotifyMsg("Drone Control is not implemented yet.");
@@ -374,15 +375,20 @@ PyResult EntityBound::CmdAbandonDrone(PyCallArgs &call, PyList* droneIDs) {
     _log(DRONE__TRACE, "EntityBound::Handle_CmdAbandonDrone()");
     call.Dump(DRONE__DUMP);
 
-    PyList::const_iterator it = droneIDs->begin();
-    for (; it != droneIDs->end(); ++it) {
+    Client* client = call.client;
+    for (auto it = droneIDs->begin(); it != droneIDs->end(); ++it) {
         if (!(*it)->IsInt()) continue;
         uint32 droneID = (*it)->AsInt()->value();
+
         SystemEntity* se = m_sysMgr->GetSE(droneID);
-        if (se != nullptr && se->IsDroneSE()) {
-            se->GetDroneSE()->Abandon();
-        }
+        if (!se || !se->IsDroneSE()) continue;
+
+        DroneSE* drone = se->GetDroneSE();
+        if (drone->GetOwner() != client) continue;
+
+        drone->Abandon();  // Clears owner and controller, disables AI
     }
+
     return PyStatic.mtDict();
 }
 
@@ -399,19 +405,23 @@ PyResult EntityBound::CmdReconnectToDrones(PyCallArgs &call, PyList* droneCandid
     _log(DRONE__TRACE, "EntityBound::Handle_CmdReconnectToDrones()");
     call.Dump(DRONE__DUMP);
 
-    PyList::const_iterator it = droneCandidates->begin();
-    for (; it != droneCandidates->end(); ++it) {
+    Client* client = call.client;
+    for (auto it = droneCandidates->begin(); it != droneCandidates->end(); ++it) {
         if (!(*it)->IsInt()) continue;
         uint32 droneID = (*it)->AsInt()->value();
+
         SystemEntity* se = m_sysMgr->GetSE(droneID);
-        if (se != nullptr && se->IsDroneSE()) {
-            DroneSE* drone = se->GetDroneSE();
-            if (drone->GetOwner() == nullptr && drone->GetOwnerID() == call.client->GetCharacterID()) {
-                drone->SetOwner(call.client);
-                drone->Online(call.client->GetShipSE());
-                drone->StateChange();
-            }
+        if (!se || !se->IsDroneSE()) continue;
+
+        DroneSE* drone = se->GetDroneSE();
+
+        // Only reconnect to drones with no owner (abandoned)
+        if (drone->GetOwner() == nullptr && drone->GetOwnerID() == 0) {
+            drone->SetOwner(client);                       // Reassign owner data
+            drone->Online(client->GetShipSE());            // Link to current ship
+            drone->StateChange();                          // Notify clients of drone state change
         }
     }
+
     return PyStatic.mtDict();
 }
