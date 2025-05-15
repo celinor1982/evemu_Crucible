@@ -200,6 +200,7 @@ void DroneSE::Online(ShipSE* pShipSE /*= nullptr*/) {
 
     // Delay going fully online until Process() confirms bubble assignment
     m_readyToOrbit = true;
+    m_AI->m_needsInitialIdle = true;
 
     _log(DRONE__TRACE, "Drone %s(%u): Online request received — awaiting bubble to activate orbit.", GetName(), GetID());
 }
