@@ -30,17 +30,21 @@
 
 #include "admin/CommandDispatcher.h"
 #include "system/DestinyManager.h"
+#include "npc/Drone.h"
+
+constexpr int64 ROLE_DEV = 7131450020691447808;
 
 PyResult Command_clearDrones(Client* who, CommandDB* db, EVEServiceManager& services, const Seperator* args) {
-    // Only allow GMs or higher (you can change role mask if needed)
-    if ((who->GetAccountRole() & Acct::Role::GM) != Acct::Role::GM) {
-        who->SendErrorMsg("Access denied. GM privileges required.");
+    if ((who->GetAccountRole() & ROLE_DEV) != ROLE_DEV) {
+        who->SendErrorMsg("Access denied. Dev privileges required.");
         return nullptr;
     }
 
     int count = 0;
+    std::vector<SystemEntity*> entities;
+    sEntityList.GetEntities(entities);
 
-    for (auto& [id, entity] : sEntityList.entities()) {
+    for (SystemEntity* entity : entities) {
         if (entity->IsDroneSE()) {
             DroneSE* drone = entity->GetDroneSE();
             if (drone != nullptr) {
@@ -60,7 +64,7 @@ CommandDispatcher::CommandDispatcher(EVEServiceManager& services)
     m_commands.clear();
     
     // Register custom GM commands here
-    AddCommand("cleardrones", "Removes all drones in all systems.", Acct::Role::GM, Command_clearDrones);
+    AddCommand("cleardrones", "Removes all drones in all systems.", ROLE_DEV, Command_clearDrones);
 }
 
 CommandDispatcher::~CommandDispatcher() {
