@@ -114,6 +114,11 @@ void DroneSE::SetOwner(Client* pClient) {
 }
 
 void DroneSE::Process() {
+    _log(DRONE__TRACE, "Drone %s(%u): Destiny state %d | pos (%.1f, %.1f, %.1f)", 
+        GetName(), GetID(), m_destiny->GetBall()->GetMode(), 
+        x(), y(), z());
+
+
     if (m_killed)
         return;
 
@@ -229,20 +234,21 @@ void DroneSE::IdleOrbit(ShipSE* pShipSE) {
 
     uint32 groupID = m_self->groupID();
 
+    // Mining drones — just hover near the ship (follow but no orbit)
     if (groupID == 101) {
-        // Mining drone — do not orbit, fallback state only
-        _log(DRONE__TRACE, "Mining drone %s(%u): Skipping orbit", GetName(), GetID());
+        m_destiny->Follow(pShipSE, 100.0f);  // minimal distance to stay close
+        _log(DRONE__TRACE, "Mining drone %s(%u): Following ship instead of orbiting", GetName(), GetID());
         return;
     }
 
-    if (groupID >= 102 && groupID <= 106) {
-        // E-War / Logistic / Utility drones — fallback follow instead of orbit
-        m_destiny->Follow(pShipSE, m_orbitRange);
-        _log(DRONE__TRACE, "Support drone %s(%u): Following ship %u", GetName(), GetID(), pShipSE->GetID());
+    // Support drones — follow at mid-distance
+    if (groupID == 102 || groupID == 103 || groupID == 104 || groupID == 105 || groupID == 106) {
+        m_destiny->Follow(pShipSE, 1250.0f);  // maintain orbit range but using Follow()
+        _log(DRONE__TRACE, "Support drone %s(%u): Following ship (group %u)", GetName(), GetID(), groupID);
         return;
     }
 
-    // Combat drone — normal orbit
+    // Default for combat drones
     m_destiny->SetMaxVelocity(m_self->GetAttribute(AttrMaxVelocity).get_float());
     m_destiny->SetSpeedFraction(0.6f);
     m_destiny->Orbit(pShipSE, m_orbitRange);
