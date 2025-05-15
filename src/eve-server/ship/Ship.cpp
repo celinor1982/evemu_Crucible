@@ -2844,29 +2844,24 @@ void ShipSE::ScoopDrone(SystemEntity* pSE) {
 
     DroneSE* drone = pSE->GetDroneSE();
 
-    // Remove from active list
+    // Remove from local drone tracking
     m_drones.erase(drone->GetID());
 
-    // Disable AI and unlink control
+    // Disable AI and controller info
     drone->Offline();
 
-    // Update bandwidth
+    // Adjust bandwidth load
     EvilNumber load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad);
     load -= drone->GetSelf()->GetAttribute(AttrDroneBandwidthUsed);
     m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false);
 
-    // Move to drone bay
-    if (m_shipRef->GetMyInventory()->ValidateAddItem(flagDroneBay, drone->GetSelf())) {
-        m_shipRef->GetMyInventory()->AddItem(flagDroneBay, drone->GetSelf());
-    } else {
-        _log(DRONE__WARNING, "ScoopDrone: Not enough drone bay space to return %s", drone->GetName());
-        return;  // Drone is stuck in space
-    }
+    // Move the drone item back to the drone bay
+    drone->GetSelf()->Move(m_shipRef->itemID(), flagDroneBay, true);
 
     // Notify clients and clean up
-    drone->StateChange();                         // Clear UI
-    m_systemMgr->RemoveEntity(pSE);              // Remove from system space
-    SafeDelete(pSE);                             // Clean entity
+    drone->StateChange();
+    drone->GetSystemManager()->RemoveEntity(pSE);
+    SafeDelete(pSE);
 }
 
 void ShipSE::UpdateDrones(std::map<int16, int8> &attribs) {
