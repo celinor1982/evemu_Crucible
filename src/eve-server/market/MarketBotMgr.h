@@ -34,7 +34,6 @@ private:
 #define sMktBotDataMgr \
 ( MarketBotDataMgr::get() )
 
-
 class MarketBotMgr
 : public Singleton<MarketBotMgr>
 {
@@ -48,9 +47,18 @@ public:
     void AddSystem();
     void RemoveSystem();
 
+    void PlaceBuyOrders(uint32 systemID);
+    void PlaceSellOrders(uint32 systemID);
+    void ExpireOldOrders();
+
+    std::vector<uint32> GetEligibleSystems();
+    uint32 SelectRandomItemID();
+    uint32 GetRandomQuantity(uint32 groupID);
+    double CalculateBuyPrice(uint32 itemID);
+    double CalculateSellPrice(uint32 itemID);
+
 private:
     Timer m_updateTimer;
-
     bool m_initalized;
 };
 
