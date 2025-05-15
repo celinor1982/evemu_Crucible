@@ -47,6 +47,7 @@
 #include "system/cosmicMgrs/WormholeMgr.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 #include "corporation/CorporationDB.h"
+#include "npc/Drone.h"
 
 EntityList::EntityList()
 : m_services(nullptr),
@@ -225,15 +226,14 @@ void EntityList::Process() {
         if (clearDronesOnce) {
             clearDronesOnce = false;  // only run once
             int cleared = 0;
-            for (auto& [id, entity] : entities()) {
-                if (entity->IsDroneSE()) {
-                    DroneSE* drone = entity->GetDroneSE();
-                    if (drone != nullptr) {
-                        drone->RemoveDrone();
-                        ++cleared;
+                for (auto& [id, entity] : m_entities) {
+                    if (entity->IsDroneSE()) {
+                        DroneSE* drone = entity->GetDroneSE();
+                        if (drone != nullptr) {
+                            drone->RemoveDrone();
+                        }
                     }
                 }
-            }
             _log(SERVER__INFO, "EntityList::Process() - Cleared %d drones from space.", cleared);
         }
         // === End drone clearing block ===
