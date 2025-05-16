@@ -200,14 +200,15 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
 void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
     SystemData sysData;
     if (!sDataMgr.GetSystemData(systemID, sysData)) {
-        _log(MARKET__ERROR, "Failed to get system data for system %u", systemID);
+        _log(MARKET__ERROR, "MarketBot: Failed to get system data for system %u", systemID);
         return;
     }
 
-    std::vector<uint32> availableStations;
     if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
-        _log(MARKET__ERROR, "No stations found for system %u", systemID);
+        _log(MARKET__ERROR, "MarketBot: No stations found for system %u — skipping order creation.", systemID);
         return;
+    } else {
+        _log(MARKET__TRACE, "MarketBot: Found %zu stations in system %u", availableStations.size(), systemID);
     }
 
     size_t stationCount = availableStations.size();
@@ -229,6 +230,7 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         Market::SaveData order;
         order.typeID = itemID;
         order.regionID = sysData.regionID;
+        _log(MARKET__TRACE, "System %u maps to region %u via GetSystemData", systemID, sysData.regionID);
         order.stationID = stationID;
         order.solarSystemID = systemID;
         order.volEntered = quantity;
@@ -240,11 +242,16 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.isCorp = false;
         order.ownerID = BOT_OWNER_ID;
 
+        _log(MARKET__TRACE, "MarketBot: Creating %s order for typeID %u, qty %u, price %.2f, station %u, region %u",
+            (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID, order.regionID);
+
         MarketDB::StoreOrder(order);
 
-        _log(MARKET__TRACE, "%s order created for typeID %u, qty %u, price %.2f ISK, station %u",
-            (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
-
+        bool success = MarketDB::StoreOrder(order);
+        if (!success) {
+            _log(MARKET__ERROR, "MarketBot: Failed to store %s order for typeID %u at station %u",
+                (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
+        }
     }
 }
 
