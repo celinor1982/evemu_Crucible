@@ -83,8 +83,8 @@ void MarketBotMgr::Process() {
     for (uint32 systemID : eligibleSystems) {
         std::vector<uint32> availableStations;
         if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
-            _log(MARKET__ERROR, "No stations found for system %u", systemID);
-            return;
+            _log(MARKET__TRACE, "Skipping system %u: no stations available.", systemID);
+            continue;
         }
         PlaceBuyOrders(systemID);
         PlaceSellOrders(systemID);
@@ -93,23 +93,18 @@ void MarketBotMgr::Process() {
     m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
 }
 
-void MarketBotMgr::AddSystem() {
-    // To be implemented if needed
-}
-
-void MarketBotMgr::RemoveSystem() {
-    // To be implemented if needed
-}
+void MarketBotMgr::AddSystem() { /* To be implemented if needed */ }
+void MarketBotMgr::RemoveSystem() { /* To be implemented if needed */ }
 
 void MarketBotMgr::ExpireOldOrders() {
     uint64_t now = GetFileTimeNow();
 
     DBQueryResult res;
     DBResultRow row;
-    if (!DBcore::RunQuery(res,
+    ServiceDB db;
+    if (!db.RunQuery(res,
         "SELECT orderID FROM market_orders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = 1",
-        now))
-    {
+        now)) {
         _log(MARKET__DB_ERROR, "Failed to query expired bot orders.");
         return;
     }
@@ -134,7 +129,6 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         return;
     }
 
-    std::vector<uint32> availableStations = stationItr->second;
     size_t stationCount = availableStations.size();
     size_t stationLimit = std::max<size_t>(1, stationCount / 2);
     std::shuffle(availableStations.begin(), availableStations.end(), std::mt19937{std::random_device{}()});
@@ -182,7 +176,6 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         return;
     }
 
-    std::vector<uint32> availableStations = stationItr->second;
     size_t stationCount = availableStations.size();
     size_t stationLimit = std::max<size_t>(1, stationCount / 2);
     std::shuffle(availableStations.begin(), availableStations.end(), std::mt19937{std::random_device{}()});
