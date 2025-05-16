@@ -283,21 +283,22 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, EVEServiceManager &s
     return new PyString(reply);
 }
 
-PyResult Command_commandlist(Client* pClient, CommandDB* db, EVEServiceManager &services, const Seperator& args) {
-    /*
-     * this command will send the client a list of loaded game commands, role required, and description.  -allan 23May15
-     */
+PyResult Command_commandlist(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
+    std::ostringstream out;
+    out << "<b>Available Commands</b><br><br>";
 
-    char reply[65];
-    snprintf(reply, 65,
-             "Working on making this list...check back later.<br>" //53
-             " -Allan"); //9
+    const auto& commands = services.commandDispatcher.GetCommandList();
 
-    pClient->SendInfoModalMsg(reply);
+    for (const auto& [name, record] : commands) {
+        if (pClient->GetAccountRole() < record->required_role)
+            continue;
 
-    return new PyString(reply);
+        out << "/" << name << " (Role " << record->required_role << ") - " << record->description << "<br>";
+    }
+
+    pClient->SendInfoModalMsg(out.str().c_str());
+    return new PyString("Command list sent.");
 }
-
 
 PyResult Command_secstatus(Client* pClient, CommandDB* db, EVEServiceManager &services, const Seperator& args) {
     /*

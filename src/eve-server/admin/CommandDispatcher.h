@@ -34,6 +34,8 @@ public:
     void AddCommand(const char *cmd, const char *desc, int64 required_role, CommandFunc function);
     void ListCommands();
 
+    const std::map<std::string, CommandRecord*>& GetCommandList() const { return m_commands; } // gives external read-only access to the command list.
+
 protected:
     EVEServiceManager &m_services;
     CommandDB m_db;
