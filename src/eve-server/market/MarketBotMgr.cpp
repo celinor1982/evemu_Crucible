@@ -74,8 +74,15 @@ int MarketBotMgr::Initialize() {
 
 void MarketBotMgr::ForceRun() {
     _log(MARKET__TRACE, "Admin-triggered MarketBot run.");
-    this->Process();  // runs immediately regardless of timer
-    m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);  // reset the timer
+
+    if (!m_initalized) {
+        _log(MARKET__ERROR, "MarketBotMgr is not initialized — skipping.");
+        return;
+    }
+
+    this->Process();  // run main logic
+    _log(MARKET__TRACE, "MarketBot Process() completed.");
+    m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
 }
 
 // Called on minute tick from EntityList
