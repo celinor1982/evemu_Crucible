@@ -73,36 +73,48 @@ int MarketBotMgr::Initialize() {
 }
 
 void MarketBotMgr::ForceRun() {
-    _log(MARKET__TRACE, "Admin-triggered MarketBot run.");
+    _log(MARKET__TRACE, ">>>> ForceRun() was triggered.");
 
     if (!m_initalized) {
-        _log(MARKET__ERROR, "MarketBotMgr is not initialized — skipping.");
+        _log(MARKET__ERROR, "MarketBotMgr not initialized. Aborting.");
         return;
     }
 
-    this->Process();  // run main logic
-    _log(MARKET__TRACE, "MarketBot Process() completed.");
+    _log(MARKET__TRACE, "MarketBotMgr initialized. Running Process().");
+
+    this->Process();
+
+    _log(MARKET__TRACE, "Process() finished. Restarting timer.");
     m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
 }
 
 // Called on minute tick from EntityList
 void MarketBotMgr::Process() {
-    if (!m_initalized || !m_updateTimer.Check())
-        return;
+    _log(MARKET__TRACE, ">> Entered MarketBotMgr::Process()");
 
+    if (!m_initalized) {
+        _log(MARKET__ERROR, "Process() called but MarketBotMgr is not initialized.");
+        return;
+    }
+
+    if (!m_updateTimer.Check()) {
+        _log(MARKET__TRACE, "Update timer not ready yet.");
+        return;
+    }
+
+    _log(MARKET__TRACE, "Processing old orders...");
     ExpireOldOrders();
 
     std::vector<uint32> eligibleSystems = GetEligibleSystems();
+    _log(MARKET__TRACE, "Found %zu eligible systems for order placement.", eligibleSystems.size());
+
     for (uint32 systemID : eligibleSystems) {
-        std::vector<uint32> availableStations;
-        if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
-            _log(MARKET__TRACE, "Skipping system %u: no stations available.", systemID);
-            continue;
-        }
+        _log(MARKET__TRACE, "Placing orders in systemID: %u", systemID);
         PlaceBuyOrders(systemID);
         PlaceSellOrders(systemID);
     }
 
+    _log(MARKET__TRACE, "MarketBot cycle complete. Resetting timer.");
     m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
 }
 
@@ -173,6 +185,10 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         order.ownerID = 1000125; // NPC corp owner
 
         MarketDB::StoreOrder(order);
+
+        _log(MARKET__TRACE, "%s order created for typeID %u, qty %u, price %.2f ISK, station %u",
+            (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
+
     }
 }
 
@@ -220,6 +236,10 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.ownerID = 1; // NPC corp owner
 
         MarketDB::StoreOrder(order);
+
+        _log(MARKET__TRACE, "%s order created for typeID %u, qty %u, price %.2f ISK, station %u",
+            (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
+
     }
 }
 
