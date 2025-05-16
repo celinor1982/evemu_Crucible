@@ -163,7 +163,7 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         order.bid = true;
         order.issued = GetFileTimeNow();
         order.isCorp = false;
-        order.ownerID = 1; // NPC corp owner
+        order.ownerID = 1000125; // NPC corp owner
 
         MarketDB::StoreOrder(order);
     }
