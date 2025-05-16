@@ -29,7 +29,7 @@
 #include "testing/test.h"
 #include "market/MarketBotMgr.h"
 #include "admin/CommandDispatcher.h"
-#include "eve-common/EVE_Roles.h"
+#include "EVE_Roles.h"
 
 extern CommandDispatcher* g_dispatcher;
 
