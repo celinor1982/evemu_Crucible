@@ -30,6 +30,8 @@
 #include "market/MarketBotMgr.h"
 #include "admin/CommandDispatcher.h"
 
+extern CommandDispatcher* g_dispatcher;
+
 PyResult Command_siglist(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
     /* this command is used to test anomaly system   -allan 21Feb15
      *   will list all anomalies, by systemID.
@@ -287,7 +289,7 @@ PyResult Command_commandlist(Client* pClient, CommandDB* db, EVEServiceManager& 
     std::ostringstream out;
     out << "<b>Available Commands</b><br><br>";
 
-    const auto& commands = CommandDispatcher::GetGlobal()->GetCommandList();
+    const auto& commands = g_dispatcher->GetCommandList();
 
     for (const auto& [name, record] : commands) {
         if (pClient->GetAccountRole() < record->required_role)

@@ -43,4 +43,6 @@ protected:
     std::map<std::string, CommandRecord *> m_commands;    //we own these pointers
 };
 
+extern CommandDispatcher* g_dispatcher;
+
 #endif
