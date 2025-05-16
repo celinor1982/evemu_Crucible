@@ -204,6 +204,8 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         return;
     }
 
+    std::vector<uint32> availableStations;
+
     if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
         _log(MARKET__ERROR, "MarketBot: No stations found for system %u — skipping order creation.", systemID);
         return;
@@ -244,8 +246,6 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
 
         _log(MARKET__TRACE, "MarketBot: Creating %s order for typeID %u, qty %u, price %.2f, station %u, region %u",
             (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID, order.regionID);
-
-        MarketDB::StoreOrder(order);
 
         bool success = MarketDB::StoreOrder(order);
         if (!success) {
