@@ -256,10 +256,15 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
 }
 
 std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
+    std::vector<uint32> systemIDs = { 30002510 };  // Jita
+    return systemIDs;
+}
+
+/*std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
     std::vector<uint32> systemIDs;
     sDataMgr.GetRandomSystemIDs(5, systemIDs); // pulls a randomized list of systems
     return systemIDs;
-}
+}*/
 
 uint32 MarketBotMgr::SelectRandomItemID() {
     uint32 itemID = 0;
