@@ -28,6 +28,7 @@
 #include "system/cosmicMgrs/DungeonMgr.h"
 #include "testing/test.h"
 #include "market/MarketBotMgr.h"
+#include "services/ServiceManager.h"
 
 PyResult Command_siglist(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
     /* this command is used to test anomaly system   -allan 21Feb15
