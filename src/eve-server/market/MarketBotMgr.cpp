@@ -283,7 +283,9 @@ uint32 MarketBotMgr::SelectRandomItemID() {
         }
     } while (tries < 50);
 
-    throw std::runtime_error("MarketBot: Failed to select valid itemID after 50 attempts.");
+    // If we fail after 50 attempts, log a warning and return fallback value
+    _log(MARKET__WARNING, "Failed to select valid itemID after %u attempts. Returning fallback itemID = 34 (Tritanium)", tries);
+    return 34;  // Tritanium, as a safe default
 }
 
 uint32 MarketBotMgr::GetRandomQuantity(uint32 groupID) {
