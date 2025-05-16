@@ -32,6 +32,8 @@ static const std::vector<uint32> VALID_GROUPS = {
 
 static const char* const BOT_CONFIG_FILE = "/src/utils/config/MarketBot.xml";
 
+static constexpr uint32 BOT_OWNER_ID = 1000125; // NPC corp owner, default CONCORD
+
 // helper random generators
 int GetRandomInt(int min, int max) {
     static thread_local std::mt19937 rng(std::random_device{}());
@@ -185,7 +187,7 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         order.bid = true;
         order.issued = GetFileTimeNow();
         order.isCorp = false;
-        order.ownerID = 1000125; // NPC corp owner
+        order.ownerID = BOT_OWNER_ID;
 
         MarketDB::StoreOrder(order);
 
@@ -236,7 +238,7 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.bid = false;
         order.issued = GetFileTimeNow();
         order.isCorp = false;
-        order.ownerID = 1; // NPC corp owner
+        order.ownerID = BOT_OWNER_ID;
 
         MarketDB::StoreOrder(order);
 
