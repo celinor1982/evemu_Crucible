@@ -101,7 +101,8 @@ void MarketBotMgr::ExpireOldOrders() {
 
     DBQueryResult res;
     DBResultRow row;
-    if (!DBcore::RunQuery(res, // FIXED: use DBcore::RunQuery with correct static call syntax
+
+    if (!sDatabase.RunQuery(res,
         "SELECT orderID FROM market_orders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = 1",
         now)) {
         _log(MARKET__DB_ERROR, "Failed to query expired bot orders.");
