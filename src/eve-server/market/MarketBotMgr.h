@@ -57,6 +57,8 @@ public:
     double CalculateBuyPrice(uint32 itemID);
     double CalculateSellPrice(uint32 itemID);
 
+    void ForceRun(); // debug command to force MarketBot to run first cycle to generate NPC buy and sell orders.
+
 private:
     Timer m_updateTimer;
     bool m_initalized;

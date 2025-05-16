@@ -27,6 +27,7 @@
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
 #include "testing/test.h"
+#include "market/MarketBotMgr.h"
 
 
 PyResult Command_siglist(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
@@ -1156,6 +1157,12 @@ PyResult Command_runtest(Client* pClient, CommandDB* db, EVEServiceManager &serv
 
     testing::posTest(pClient);
     return nullptr;
+}
+
+PyResult Command_marketbot_run(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
+    sMktBotMgr.ForceRun();  // assumes ForceRun() already defined in MarketBotMgr
+    pClient->SendNotifyMsg("MarketBot run triggered manually.");
+    return new PyString("MarketBot: refresh cycle started.");
 }
 
 PyResult Command_bindList(Client* pClient, CommandDB* db, EVEServiceManager &services, const Seperator& args)
