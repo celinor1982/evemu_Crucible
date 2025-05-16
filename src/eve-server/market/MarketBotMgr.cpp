@@ -256,24 +256,34 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
 }
 
 std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
-    std::vector<uint32> systemIDs = { 30002510 };  // Jita
-    return systemIDs;
-}
+    bool useStaticSystems = true;
+    if (useStaticSystems) {
+        return { 30002510 };  // Jita
+    }
 
-/*std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
     std::vector<uint32> systemIDs;
     sDataMgr.GetRandomSystemIDs(5, systemIDs); // pulls a randomized list of systems
+    _log(MARKET__TRACE, "GetEligibleSystems(): Pulled %zu systems from StaticDataMgr", systemIDs.size());
     return systemIDs;
-}*/
+}
 
 uint32 MarketBotMgr::SelectRandomItemID() {
     uint32 itemID = 0;
     const ItemType* type = nullptr;
+    uint32 tries = 0;
+
     do {
+        ++tries;
         itemID = GetRandomInt(10, MARKETBOT_MAX_ITEM_ID);
         type = sItemFactory.GetType(itemID);
-    } while (!type || std::find(VALID_GROUPS.begin(), VALID_GROUPS.end(), type->groupID()) == VALID_GROUPS.end());
-    return itemID;
+
+        if (type && std::find(VALID_GROUPS.begin(), VALID_GROUPS.end(), type->groupID()) != VALID_GROUPS.end()) {
+            _log(MARKET__TRACE, "Selected itemID %u after %u attempts", itemID, tries);
+            return itemID;
+        }
+    } while (tries < 50);
+
+    throw std::runtime_error("MarketBot: Failed to select valid itemID after 50 attempts.");
 }
 
 uint32 MarketBotMgr::GetRandomQuantity(uint32 groupID) {
