@@ -29,6 +29,7 @@
 #include "testing/test.h"
 #include "market/MarketBotMgr.h"
 #include "admin/CommandDispatcher.h"
+#include "utils/config/EVE_Roles.h"
 
 extern CommandDispatcher* g_dispatcher;
 
@@ -295,7 +296,7 @@ PyResult Command_commandlist(Client* pClient, CommandDB* db, EVEServiceManager& 
         if (pClient->GetAccountRole() < record->required_role)
             continue;
 
-        out << "/" << name << " (Role " << record->required_role << ") - " << record->description << "<br>";
+        out << "/" << name << " (Role " << GetRoleName(record->required_role) << ") - " << record->description << "<br>";
     }
 
     pClient->SendInfoModalMsg(out.str().c_str());
@@ -1218,6 +1219,32 @@ PyResult Command_dropLoot(Client* pClient, CommandDB* db, EVEServiceManager &ser
     pBubble->CmdDropLoot();
 
     return nullptr;
+}
+
+// helper function to convert role strings into names
+const char* GetRoleName(int64_t roleValue) {
+    static const std::map<int64_t, const char*> roleNames = {
+        {Acct::Role::PLAYER, "PLAYER"},
+        {Acct::Role::ADMIN, "ADMIN"},
+        {Acct::Role::PROGRAMMER, "PROGRAMMER"},
+        {Acct::Role::GMH, "GMH"},
+        {Acct::Role::GML, "GML"},
+        {Acct::Role::SPAWN, "SPAWN"},
+        {Acct::Role::CONTENT, "CONTENT"},
+        {Acct::Role::QA, "QA"},
+        {Acct::Role::VIPLOGIN, "VIPLOGIN"},
+        {Acct::Role::LOGIN, "LOGIN"},
+        {Acct::Role::SLASH, "SLASH"},
+        {Acct::Role::DEV, "DEV"},
+        {Acct::Role::BOSS, "BOSS"},
+        // Add others as needed
+    };
+
+    auto it = roleNames.find(roleValue);
+    if (it != roleNames.end())
+        return it->second;
+
+    return "UNKNOWN";
 }
 
 /* groove's new command.....
