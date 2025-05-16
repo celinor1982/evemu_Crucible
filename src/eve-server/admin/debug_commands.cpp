@@ -1190,7 +1190,11 @@ PyResult Command_runtest(Client* pClient, CommandDB* db, EVEServiceManager &serv
 }
 
 PyResult Command_marketbot_run(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
+    std::printf("/marketbot_run: Command entered\n");
+    std::fflush(stdout);
+
     sMktBotMgr.ForceRun();  // assumes ForceRun() already defined in MarketBotMgr
+
     pClient->SendNotifyMsg("MarketBot run triggered manually.");
     return new PyString("MarketBot: refresh cycle started.");
 }

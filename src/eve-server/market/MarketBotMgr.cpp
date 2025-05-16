@@ -73,19 +73,22 @@ int MarketBotMgr::Initialize() {
 }
 
 void MarketBotMgr::ForceRun() {
-    _log(MARKET__TRACE, ">>>> ForceRun() was triggered.");
+    std::printf("ForceRun entered\n");
+    std::fflush(stdout);
 
     if (!m_initalized) {
-        _log(MARKET__ERROR, "MarketBotMgr not initialized. Aborting.");
+        std::printf("MarketBotMgr not initialized — skipping run\n");
+        std::fflush(stdout);
         return;
     }
 
-    _log(MARKET__TRACE, "MarketBotMgr initialized. Running Process().");
+    std::printf("Running Process() now...\n");
+    std::fflush(stdout);
 
-    this->Process();
+    Process();
 
-    _log(MARKET__TRACE, "Process() finished. Restarting timer.");
-    m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
+    std::printf("Finished Process()\n");
+    std::fflush(stdout);
 }
 
 // Called on minute tick from EntityList
