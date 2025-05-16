@@ -28,7 +28,7 @@
 #include "system/cosmicMgrs/DungeonMgr.h"
 #include "testing/test.h"
 #include "market/MarketBotMgr.h"
-#include "services/ServiceManager.h"
+#include "admin/CommandDispatcher.h"
 
 PyResult Command_siglist(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
     /* this command is used to test anomaly system   -allan 21Feb15
@@ -283,11 +283,11 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, EVEServiceManager &s
     return new PyString(reply);
 }
 
-PyResult Command_commandlist(Client* pClient, CommandDB* db, EVEServiceManager &services, const Seperator& args) {
+PyResult Command_commandlist(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
     std::ostringstream out;
     out << "<b>Available Commands</b><br><br>";
 
-    const auto& commands = services.commandDispatcher.GetCommandList();
+    const auto& commands = CommandDispatcher::GetGlobal()->GetCommandList();
 
     for (const auto& [name, record] : commands) {
         if (pClient->GetAccountRole() < record->required_role)
