@@ -128,6 +128,7 @@ void MarketBotMgr::Process(bool overrideTimer) {
 
     int totalBuyOrders = 0;
     int totalSellOrders = 0;
+    int expiredOrders = ExpireOldOrders();
 
     for (uint32 systemID : eligibleSystems) {
         std::printf("[MarketBot] Placing orders in systemID: %u\n", systemID);
