@@ -150,7 +150,7 @@ void MarketBotMgr::ExpireOldOrders() {
     DBResultRow row;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT orderID FROM market_orders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = 1",
+        "SELECT orderID FROM mktOrders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = 1",
         now)) {
         std::printf("[MarketBot] Failed to query expired bot orders.\n");
         std::fflush(stdout);
@@ -188,6 +188,8 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
     size_t stationLimit = std::max<size_t>(1, stationCount / 2);
     std::shuffle(availableStations.begin(), availableStations.end(), std::mt19937{std::random_device{}()});
 
+    int orderCount = 0;
+
     for (size_t i = 0; i < std::min<size_t>(stationLimit, sMBotConf.main.OrdersPerRefresh); ++i) {
         uint32 stationID = availableStations[i];
         uint32 itemID = SelectRandomItemID();
@@ -216,13 +218,17 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
 
         MarketDB::StoreOrder(order);
         
+        // inside the loop after StoreOrder()
+        ++orderCount;
+
         std::printf("[MarketBot] %s order created for typeID %u, qty %u, price %.2f ISK, station %u\n",
             (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
         std::fflush(stdout);
         _log(MARKET__TRACE, "%s order created for typeID %u, qty %u, price %.2f ISK, station %u",
             (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
-
     }
+    std::printf("[MarketBot] Created %d buy orders for system %u\n", orderCount, systemID);
+    std::fflush(stdout);
 }
 
 void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
@@ -242,7 +248,7 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         _log(MARKET__ERROR, "MarketBot: No stations found for system %u — skipping order creation.", systemID);
         return;
     } else {
-        std::printf("[MarketBot] Found %zu stations in system %u\n", systemID);
+        std::printf("[MarketBot] Found %zu stations in system %u\n", availableStations.size(), systemID);
         std::fflush(stdout);
         _log(MARKET__TRACE, "MarketBot: Found %zu stations in system %u", availableStations.size(), systemID);
     }
@@ -250,6 +256,8 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
     size_t stationCount = availableStations.size();
     size_t stationLimit = std::max<size_t>(1, stationCount / 2);
     std::shuffle(availableStations.begin(), availableStations.end(), std::mt19937{std::random_device{}()});
+
+    int orderCount = 0;
 
     for (size_t i = 0; i < std::min<size_t>(stationLimit, sMBotConf.main.OrdersPerRefresh); ++i) {
         uint32 stationID = availableStations[i];
@@ -266,9 +274,6 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         Market::SaveData order;
         order.typeID = itemID;
         order.regionID = sysData.regionID;
-        std::printf("[MarketBot] System %u maps to region %u via GetSystemData.\n", systemID, sysData.regionID);
-        std::fflush(stdout);
-        _log(MARKET__TRACE, "System %u maps to region %u via GetSystemData", systemID, sysData.regionID);
         order.stationID = stationID;
         order.solarSystemID = systemID;
         order.volEntered = quantity;
@@ -279,15 +284,20 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.issued = GetFileTimeNow();
         order.isCorp = false;
         order.ownerID = BOT_OWNER_ID;
-        
-        std::printf("[MarketBot] %s order created for typeID %u, qty %u, price %.2f ISK, station %u\n",
-            (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
+
+        std::printf("[MarketBot] System %u maps to region %u via GetSystemData.\n", systemID, sysData.regionID);
         std::fflush(stdout);
-        _log(MARKET__TRACE, "MarketBot: Creating %s order for typeID %u, qty %u, price %.2f, station %u, region %u",
-            (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID, order.regionID);
+        _log(MARKET__TRACE, "System %u maps to region %u via GetSystemData", systemID, sysData.regionID);
 
         bool success = MarketDB::StoreOrder(order);
-        if (!success) {
+        if (success) {
+            ++orderCount;
+            std::printf("[MarketBot] %s order created for typeID %u, qty %u, price %.2f ISK, station %u\n",
+                (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
+            std::fflush(stdout);
+            _log(MARKET__TRACE, "MarketBot: Creating %s order for typeID %u, qty %u, price %.2f, station %u, region %u",
+                (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID, order.regionID);
+        } else {
             std::printf("[MarketBot] Failed to store %s order for typeID %u at station %u\n",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
             std::fflush(stdout);
@@ -295,6 +305,8 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
         }
     }
+    std::printf("[MarketBot] Created %d sell orders for system %u\n", orderCount, systemID);
+    std::fflush(stdout);
 }
 
 std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
