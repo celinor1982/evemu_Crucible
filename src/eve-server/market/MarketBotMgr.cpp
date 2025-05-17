@@ -97,7 +97,7 @@ void MarketBotMgr::ForceRun() {
 }
 
 // Called on minute tick from EntityList
-void MarketBotMgr::Process(bool overrideTimer = false) {
+void MarketBotMgr::Process(bool overrideTimer) {
     std::printf("[MarketBot] Entered MarketBotMgr::Process()\n");
     std::fflush(stdout);
     _log(MARKET__TRACE, ">> Entered MarketBotMgr::Process()");
@@ -289,7 +289,7 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         bool success = MarketDB::StoreOrder(order);
         if (!success) {
             std::printf("[MarketBot] Failed to store %s order for typeID %u at station %u\n",
-                (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID;
+                (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
             std::fflush(stdout);
             _log(MARKET__ERROR, "MarketBot: Failed to store %s order for typeID %u at station %u",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
@@ -305,7 +305,7 @@ std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
 
     std::vector<uint32> systemIDs;
     sDataMgr.GetRandomSystemIDs(5, systemIDs); // pulls a randomized list of systems
-    std::printf("[MarketBot] GetEligibleSystems(): Pulled %zu systems from StaticDataMgr\n", systemID, sysData.regionID);
+    std::printf("[MarketBot] GetEligibleSystems(): Pulled %zu systems from StaticDataMgr\n", systemIDs.size());
     std::fflush(stdout);
     _log(MARKET__TRACE, "GetEligibleSystems(): Pulled %zu systems from StaticDataMgr", systemIDs.size());
     return systemIDs;

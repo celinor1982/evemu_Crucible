@@ -42,7 +42,7 @@ public:
     ~MarketBotMgr() { /* do nothing here */ }
 
     int Initialize();
-    void Process();
+    void Process(bool overrideTimer = false);
 
     void AddSystem();
     void RemoveSystem();
