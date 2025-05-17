@@ -75,50 +75,64 @@ int MarketBotMgr::Initialize() {
 }
 
 void MarketBotMgr::ForceRun() {
-    std::printf("ForceRun entered\n");
+    std::printf("[MarketBot] ForceRun entered\n");
     std::fflush(stdout);
 
     if (!m_initalized) {
-        std::printf("MarketBotMgr not initialized — skipping run\n");
+        std::printf("[MarketBot] MarketBotMgr not initialized — skipping run\n");
         std::fflush(stdout);
         return;
     }
 
-    std::printf("Running Process() now...\n");
+    std::printf("[MarketBot] Running Process() now...\n");
     std::fflush(stdout);
 
     Process();
 
-    std::printf("Finished Process()\n");
+    std::printf("[MarketBot] Finished Process()\n");
     std::fflush(stdout);
 }
 
 // Called on minute tick from EntityList
 void MarketBotMgr::Process() {
+    std::printf("[MarketBot] Entered MarketBotMgr::Process()\n");
+    std::fflush(stdout);
     _log(MARKET__TRACE, ">> Entered MarketBotMgr::Process()");
 
     if (!m_initalized) {
+        std::printf("[MarketBot] MarketBotMgr not initialized — skipping run\n");
+        std::fflush(stdout);
         _log(MARKET__ERROR, "Process() called but MarketBotMgr is not initialized.");
         return;
     }
 
     if (!m_updateTimer.Check()) {
+        std::printf("[MarketBot] Update timer not ready yet.\n");
+        std::fflush(stdout);
         _log(MARKET__TRACE, "Update timer not ready yet.");
         return;
     }
-
+    
+    std::printf("[MarketBot] Processing old orders...\n");
+    std::fflush(stdout);
     _log(MARKET__TRACE, "Processing old orders...");
     ExpireOldOrders();
 
     std::vector<uint32> eligibleSystems = GetEligibleSystems();
+    std::printf("[MarketBot] Found %zu eligible systems for order placement.\n", eligibleSystems.size());
+    std::fflush(stdout);
     _log(MARKET__TRACE, "Found %zu eligible systems for order placement.", eligibleSystems.size());
 
     for (uint32 systemID : eligibleSystems) {
+        std::printf("[MarketBot] Placing orders in systemID: %u\n", systemID);
+        std::fflush(stdout);
         _log(MARKET__TRACE, "Placing orders in systemID: %u", systemID);
         PlaceBuyOrders(systemID);
         PlaceSellOrders(systemID);
     }
 
+    std::printf("[MarketBot] cycle complete. Resetting timer.\n", systemID);
+    std::fflush(stdout);
     _log(MARKET__TRACE, "MarketBot cycle complete. Resetting timer.");
     m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
 }
