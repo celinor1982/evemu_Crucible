@@ -164,8 +164,8 @@ int MarketBotMgr::ExpireOldOrders() {
     int expiredCount = 0;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT orderID FROM mktOrders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = BOT_OWNER_ID",
-        now)) {
+        "SELECT orderID FROM mktOrders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = %u",
+        now, BOT_OWNER_ID)) {
         std::printf("[MarketBot] Failed to query expired bot orders.\n");
         std::fflush(stdout);
         _log(MARKET__DB_ERROR, "Failed to query expired bot orders.");
