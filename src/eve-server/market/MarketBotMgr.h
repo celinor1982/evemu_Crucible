@@ -47,9 +47,9 @@ public:
     void AddSystem();
     void RemoveSystem();
 
-    void PlaceBuyOrders(uint32 systemID);
-    void PlaceSellOrders(uint32 systemID);
-    void ExpireOldOrders();
+    int PlaceBuyOrders(uint32 systemID);
+    int PlaceSellOrders(uint32 systemID);
+    int ExpireOldOrders();
 
     std::vector<uint32> GetEligibleSystems();
     uint32 SelectRandomItemID();

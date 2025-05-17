@@ -126,13 +126,24 @@ void MarketBotMgr::Process(bool overrideTimer) {
     std::fflush(stdout);
     _log(MARKET__TRACE, "Found %zu eligible systems for order placement.", eligibleSystems.size());
 
+    int totalBuyOrders = 0;
+    int totalSellOrders = 0;
+
     for (uint32 systemID : eligibleSystems) {
         std::printf("[MarketBot] Placing orders in systemID: %u\n", systemID);
         std::fflush(stdout);
         _log(MARKET__TRACE, "Placing orders in systemID: %u", systemID);
-        PlaceBuyOrders(systemID);
-        PlaceSellOrders(systemID);
+
+        totalBuyOrders += PlaceBuyOrders(systemID);
+        totalSellOrders += PlaceSellOrders(systemID);
     }
+
+    std::printf("[MarketBot] Master Summary: Created %d buy orders and %d sell orders across %zu systems. Removed %d old orders.\n",
+        totalBuyOrders, totalSellOrders, eligibleSystems.size(), expiredOrders);
+    std::fflush(stdout);
+
+    _log(MARKET__TRACE, "MarketBot Master Summary: Created %d buy orders and %d sell orders across %zu systems. Removed %d old orders.",
+        totalBuyOrders, totalSellOrders, eligibleSystems.size(), expiredOrders);
 
     std::printf("[MarketBot] Cycle complete. Resetting timer.\n");
     std::fflush(stdout);
@@ -143,7 +154,7 @@ void MarketBotMgr::Process(bool overrideTimer) {
 void MarketBotMgr::AddSystem() { /* To be implemented if needed */ }
 void MarketBotMgr::RemoveSystem() { /* To be implemented if needed */ }
 
-void MarketBotMgr::ExpireOldOrders() {
+int MarketBotMgr::ExpireOldOrders() {
     uint64_t now = GetFileTimeNow();
 
     DBQueryResult res;
@@ -155,7 +166,7 @@ void MarketBotMgr::ExpireOldOrders() {
         std::printf("[MarketBot] Failed to query expired bot orders.\n");
         std::fflush(stdout);
         _log(MARKET__DB_ERROR, "Failed to query expired bot orders.");
-        return;
+        return 0;
     }
 
     while (res.GetRow(row)) {
@@ -165,9 +176,11 @@ void MarketBotMgr::ExpireOldOrders() {
         std::fflush(stdout);
         _log(MARKET__TRACE, "Expired MarketBot order %u", orderID);
     }
+
+    return expiredCount;
 }
 
-void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
+int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
     SystemData sysData;
     if (!sDataMgr.GetSystemData(systemID, sysData)) {
         std::printf("[MarketBot] Failed to get system data for system %u\n", systemID);
@@ -229,9 +242,10 @@ void MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
     }
     std::printf("[MarketBot] Created %d buy orders for system %u\n", orderCount, systemID);
     std::fflush(stdout);
+    return orderCount;
 }
 
-void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
+int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
     SystemData sysData;
     if (!sDataMgr.GetSystemData(systemID, sysData)) {
         std::printf("[MarketBot] Failed to get system data for system %u\n", systemID);
@@ -307,6 +321,7 @@ void MarketBotMgr::PlaceSellOrders(uint32 systemID) {
     }
     std::printf("[MarketBot] Created %d sell orders for system %u\n", orderCount, systemID);
     std::fflush(stdout);
+    return orderCount;
 }
 
 std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
