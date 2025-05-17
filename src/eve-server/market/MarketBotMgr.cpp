@@ -87,14 +87,17 @@ void MarketBotMgr::ForceRun() {
     std::printf("[MarketBot] Running Process() now...\n");
     std::fflush(stdout);
 
-    Process();
+    this->Process(true);  // force override
 
     std::printf("[MarketBot] Finished Process()\n");
     std::fflush(stdout);
+
+    // Reset the timer for the next normal cycle
+    m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
 }
 
 // Called on minute tick from EntityList
-void MarketBotMgr::Process() {
+void MarketBotMgr::Process(bool overrideTimer = false) {
     std::printf("[MarketBot] Entered MarketBotMgr::Process()\n");
     std::fflush(stdout);
     _log(MARKET__TRACE, ">> Entered MarketBotMgr::Process()");
@@ -106,7 +109,7 @@ void MarketBotMgr::Process() {
         return;
     }
 
-    if (!m_updateTimer.Check()) {
+    if (!overrideTimer && !m_updateTimer.Check()) {
         std::printf("[MarketBot] Update timer not ready yet.\n");
         std::fflush(stdout);
         _log(MARKET__TRACE, "Update timer not ready yet.");
