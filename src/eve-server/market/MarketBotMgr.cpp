@@ -160,6 +160,8 @@ int MarketBotMgr::ExpireOldOrders() {
     DBQueryResult res;
     DBResultRow row;
 
+    int expiredCount = 0;
+
     if (!sDatabase.RunQuery(res,
         "SELECT orderID FROM mktOrders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = 1",
         now)) {
@@ -172,6 +174,7 @@ int MarketBotMgr::ExpireOldOrders() {
     while (res.GetRow(row)) {
         uint32 orderID = row.GetUInt(0);
         MarketDB::DeleteOrder(orderID);
+        ++expiredCount;
         std::printf("[MarketBot] Expired MarketBot order %u\n", orderID);
         std::fflush(stdout);
         _log(MARKET__TRACE, "Expired MarketBot order %u", orderID);
@@ -186,7 +189,7 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         std::printf("[MarketBot] Failed to get system data for system %u\n", systemID);
         std::fflush(stdout);
         _log(MARKET__ERROR, "Failed to get system data for system %u", systemID);
-        return;
+        return 0;
     }
 
     std::vector<uint32> availableStations;
@@ -194,7 +197,7 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         std::printf("[MarketBot] No stations found for system %u\n", systemID);
         std::fflush(stdout);
         _log(MARKET__ERROR, "No stations found for system %u", systemID);
-        return;
+        return 0;
     }
 
     size_t stationCount = availableStations.size();
@@ -251,7 +254,7 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         std::printf("[MarketBot] Failed to get system data for system %u\n", systemID);
         std::fflush(stdout);
         _log(MARKET__ERROR, "MarketBot: Failed to get system data for system %u", systemID);
-        return;
+        return 0;
     }
 
     std::vector<uint32> availableStations;
@@ -260,7 +263,7 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         std::printf("[MarketBot] No stations found for system %u — skipping order creation.\n", systemID);
         std::fflush(stdout);
         _log(MARKET__ERROR, "MarketBot: No stations found for system %u — skipping order creation.", systemID);
-        return;
+        return 0;
     } else {
         std::printf("[MarketBot] Found %zu stations in system %u\n", availableStations.size(), systemID);
         std::fflush(stdout);
