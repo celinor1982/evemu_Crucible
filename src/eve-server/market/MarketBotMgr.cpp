@@ -131,7 +131,7 @@ void MarketBotMgr::Process() {
         PlaceSellOrders(systemID);
     }
 
-    std::printf("[MarketBot] cycle complete. Resetting timer.\n", systemID);
+    std::printf("[MarketBot] Cycle complete. Resetting timer.\n");
     std::fflush(stdout);
     _log(MARKET__TRACE, "MarketBot cycle complete. Resetting timer.");
     m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
