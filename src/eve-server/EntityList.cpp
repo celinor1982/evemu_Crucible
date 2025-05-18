@@ -37,7 +37,7 @@
 #include "exploration/Probes.h"
 #include "map/MapDB.h"
 #include "market/MarketMgr.h"
-//#include "market/MarketBotMgr.h"
+#include "market/MarketBotMgr.h"
 #include "missions/MissionDataMgr.h"
 #include "station/Station.h"
 #include "system/DestinyManager.h"
