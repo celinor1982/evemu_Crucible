@@ -58,7 +58,7 @@ int MarketBotDataMgr::Initialize() {
 }
 
 MarketBotMgr::MarketBotMgr()
-: //m_updateTimer(20 * 60 * 1000) { // default 20 minutes
+: /*m_updateTimer(20 * 60 * 1000)*/ { // default 20 minutes
     m_initalized = false;
 }
 
@@ -73,7 +73,7 @@ int MarketBotMgr::Initialize() {
 
     // START automation timer immediately
     /*uint32_t delay_ms = sMBotConf.main.DataRefreshTime * 60 * 1000;*/
-    m_updateTimer.Disabled();
+    m_updateTimer.Disable();
     m_updateTimer.Start(0); // () set to delay_ms
 
     std::printf("[MarketBot] Initialized — automation will trigger on next tick (Start(0) used)\n");
