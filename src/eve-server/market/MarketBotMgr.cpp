@@ -383,9 +383,9 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
 }
 
 std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
-    bool useStaticSystems = true;
+    bool useStaticSystems = false;
     if (useStaticSystems) {
-        return { 30002510 };  // Jita
+        return { 30000142 };  // Jita
     }
 
     std::vector<uint32> systemIDs;
