@@ -23,6 +23,10 @@
 #include "station/StationDB.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
+
+#include "station/StationDataMgr.h"
+#include "system/ManagerDB.h"
+
 #include <random>
 
 /*
