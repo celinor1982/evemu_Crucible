@@ -84,21 +84,21 @@ int MarketBotMgr::Initialize() {
 
 
 void MarketBotMgr::ForceRun() {
-    std::printf("[%s] [MarketBot] ForceRun entered\n");
+    std::printf("[MarketBot] ForceRun entered\n");
     std::fflush(stdout);
 
     if (!m_initalized) {
-        std::printf("[%s] [MarketBot] MarketBotMgr not initialized — skipping run\n");
+        std::printf("[MarketBot] MarketBotMgr not initialized — skipping run\n");
         std::fflush(stdout);
         return;
     }
 
-    std::printf("[%s] [MarketBot] Running Process() now...\n");
+    std::printf("[MarketBot] Running Process() now...\n");
     std::fflush(stdout);
 
     this->Process(true);  // force override
 
-    std::printf("[%s] [MarketBot] Finished Process()\n");
+    std::printf("[MarketBot] Finished Process()\n");
     std::fflush(stdout);
 
     // Reset the timer for the next normal cycle
@@ -109,35 +109,35 @@ void MarketBotMgr::ForceRun() {
 void MarketBotMgr::Process(bool overrideTimer) {
     bool timerReady = m_updateTimer.Check();
 
-    std::printf("[%s] [MarketBot] MarketBot Process() invoked on tick. Timer ready = %s\n", m_updateTimer.Check() ? "true" : "false");
+    std::printf("[MarketBot] MarketBot Process() invoked on tick. Timer ready = %s\n", m_updateTimer.Check() ? "true" : "false");
     std::fflush(stdout);
     _log(MARKET__TRACE, "MarketBot Process() invoked on tick. Timer ready = %s", m_updateTimer.Check() ? "true" : "false");
 
-    std::printf("[%s] [MarketBot] Entered MarketBotMgr::Process()\n");
+    std::printf("[MarketBot] Entered MarketBotMgr::Process()\n");
     std::fflush(stdout);
     _log(MARKET__TRACE, ">> Entered MarketBotMgr::Process()");
 
     if (!m_initalized) {
-        std::printf("[%s] [MarketBot] MarketBotMgr not initialized — skipping run\n");
+        std::printf("[MarketBot] MarketBotMgr not initialized — skipping run\n");
         std::fflush(stdout);
         _log(MARKET__ERROR, "Process() called but MarketBotMgr is not initialized.");
         return;
     }
 
     if (!overrideTimer && !m_updateTimer.Check()) {
-        std::printf("[%s] [MarketBot] Update timer not ready yet.\n");
+        std::printf("[MarketBot] Update timer not ready yet.\n");
         std::fflush(stdout);
         _log(MARKET__TRACE, "Update timer not ready yet.");
         return;
     }
     
-    std::printf("[%s] [MarketBot] Processing old orders...\n");
+    std::printf("[MarketBot] Processing old orders...\n");
     std::fflush(stdout);
     _log(MARKET__TRACE, "Processing old orders...");
     ExpireOldOrders();
 
     std::vector<uint32> eligibleSystems = GetEligibleSystems();
-    std::printf("[%s] [MarketBot] Found %zu eligible systems for order placement.\n", eligibleSystems.size());
+    std::printf("[MarketBot] Found %zu eligible systems for order placement.\n", eligibleSystems.size());
     std::fflush(stdout);
     _log(MARKET__TRACE, "Found %zu eligible systems for order placement.", eligibleSystems.size());
 
@@ -146,7 +146,7 @@ void MarketBotMgr::Process(bool overrideTimer) {
     int expiredOrders = ExpireOldOrders();
 
     for (uint32 systemID : eligibleSystems) {
-        std::printf("[%s] [MarketBot] Placing orders in systemID: %u\n", systemID);
+        std::printf("[MarketBot] Placing orders in systemID: %u\n", systemID);
         std::fflush(stdout);
         _log(MARKET__TRACE, "Placing orders in systemID: %u", systemID);
 
@@ -154,14 +154,14 @@ void MarketBotMgr::Process(bool overrideTimer) {
         totalSellOrders += PlaceSellOrders(systemID);
     }
 
-    std::printf("[%s] [MarketBot] Master Summary: Created %d buy orders and %d sell orders across %zu systems. Removed %d old orders.\n",
+    std::printf("[MarketBot] Master Summary: Created %d buy orders and %d sell orders across %zu systems. Removed %d old orders.\n",
         totalBuyOrders, totalSellOrders, eligibleSystems.size(), expiredOrders);
     std::fflush(stdout);
 
     _log(MARKET__TRACE, "MarketBot Master Summary: Created %d buy orders and %d sell orders across %zu systems. Removed %d old orders.",
         totalBuyOrders, totalSellOrders, eligibleSystems.size(), expiredOrders);
 
-    std::printf("[%s] [MarketBot] Cycle complete. Resetting timer.\n");
+    std::printf("[MarketBot] Cycle complete. Resetting timer.\n");
     std::fflush(stdout);
     _log(MARKET__TRACE, "MarketBot cycle complete. Resetting timer.");
     m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
@@ -181,7 +181,7 @@ int MarketBotMgr::ExpireOldOrders() {
     if (!sDatabase.RunQuery(res,
         "SELECT orderID FROM mktOrders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = %u",
         now, BOT_OWNER_ID)) {
-        std::printf("[%s] [MarketBot] Failed to query expired bot orders.\n");
+        std::printf("[MarketBot] Failed to query expired bot orders.\n");
         std::fflush(stdout);
         _log(MARKET__DB_ERROR, "Failed to query expired bot orders.");
         return 0;
@@ -191,7 +191,7 @@ int MarketBotMgr::ExpireOldOrders() {
         uint32 orderID = row.GetUInt(0);
         MarketDB::DeleteOrder(orderID);
         ++expiredCount;
-        std::printf("[%s] [MarketBot] Expired MarketBot order %u\n", orderID);
+        std::printf("[MarketBot] Expired MarketBot order %u\n", orderID);
         std::fflush(stdout);
         _log(MARKET__TRACE, "Expired MarketBot order %u", orderID);
     }
@@ -202,7 +202,7 @@ int MarketBotMgr::ExpireOldOrders() {
 int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
     SystemData sysData;
     if (!sDataMgr.GetSystemData(systemID, sysData)) {
-        std::printf("[%s] [MarketBot] Failed to get system data for system %u\n", systemID);
+        std::printf("[MarketBot] Failed to get system data for system %u\n", systemID);
         std::fflush(stdout);
         _log(MARKET__ERROR, "Failed to get system data for system %u", systemID);
         return 0;
@@ -210,7 +210,7 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
 
     std::vector<uint32> availableStations;
     if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
-        std::printf("[%s] [MarketBot] No stations found for system %u\n", systemID);
+        std::printf("[MarketBot] No stations found for system %u\n", systemID);
         std::fflush(stdout);
         _log(MARKET__ERROR, "No stations found for system %u", systemID);
         return 0;
@@ -235,16 +235,16 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
             if (quantity > 1) {
                 quantity = 1;
                 if (price > sMBotConf.main.MaxISKPerOrder) {
-                    std::printf("[%s] [MarketBot] Skipping itemID %u due to price %.2f ISK exceeding MaxISKPerOrder.\n", itemID, price);
+                    std::printf("[MarketBot] Skipping itemID %u due to price %.2f ISK exceeding MaxISKPerOrder.\n", itemID, price);
                     std::fflush(stdout);
                     _log(MARKET__TRACE, "Skipping itemID %u due to price %.2f ISK exceeding MaxISKPerOrder.", itemID, price);
                     continue;
                 }
-                std::printf("[%s] [MarketBot] Price too high for bulk, retrying with quantity = 1 for itemID %u.\n", itemID);
+                std::printf("[MarketBot] Price too high for bulk, retrying with quantity = 1 for itemID %u.\n", itemID);
                 std::fflush(stdout);
                 _log(MARKET__TRACE, "Price too high for bulk, retrying with quantity = 1 for itemID %u", itemID);
             } else {
-                std::printf("[%s] [MarketBot] Skipping itemID %u even at quantity = 1 due to price %.2f ISK.\n", itemID, price);
+                std::printf("[MarketBot] Skipping itemID %u even at quantity = 1 due to price %.2f ISK.\n", itemID, price);
                 std::fflush(stdout);
                 _log(MARKET__TRACE, "Skipping itemID %u even at quantity = 1 due to price %.2f ISK", itemID, price);
                 continue;
@@ -268,20 +268,20 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         bool success = MarketDB::StoreOrder(order);
         if (success) {
             ++orderCount;
-            std::printf("[%s] [MarketBot] %s order created for typeID %u, qty %u, price %.2f ISK, station %u\n",
+            std::printf("[MarketBot] %s order created for typeID %u, qty %u, price %.2f ISK, station %u\n",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
             std::fflush(stdout);
             _log(MARKET__TRACE, "%s order created for typeID %u, qty %u, price %.2f ISK, station %u",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
         } else {
-            std::printf("[%s] [MarketBot] Failed to store %s order for typeID %u at station %u\n",
+            std::printf([MarketBot] Failed to store %s order for typeID %u at station %u\n",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
             std::fflush(stdout);
             _log(MARKET__ERROR, "Failed to store %s order for typeID %u at station %u",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
         }
     }
-    std::printf("[%s] [MarketBot] Created %d buy orders for system %u\n", orderCount, systemID);
+    std::printf("[MarketBot] Created %d buy orders for system %u\n", orderCount, systemID);
     std::fflush(stdout);
     return orderCount;
 }
@@ -289,7 +289,7 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
 int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
     SystemData sysData;
     if (!sDataMgr.GetSystemData(systemID, sysData)) {
-        std::printf("[%s] [MarketBot] Failed to get system data for system %u\n", systemID);
+        std::printf("[MarketBot] Failed to get system data for system %u\n", systemID);
         std::fflush(stdout);
         _log(MARKET__ERROR, "MarketBot: Failed to get system data for system %u", systemID);
         return 0;
@@ -298,12 +298,12 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
     std::vector<uint32> availableStations;
 
     if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
-        std::printf("[%s] [MarketBot] No stations found for system %u — skipping order creation.\n", systemID);
+        std::printf("[MarketBot] No stations found for system %u — skipping order creation.\n", systemID);
         std::fflush(stdout);
         _log(MARKET__ERROR, "MarketBot: No stations found for system %u — skipping order creation.", systemID);
         return 0;
     } else {
-        std::printf("[%s] [MarketBot] Found %zu stations in system %u\n", availableStations.size(), systemID);
+        std::printf("[MarketBot] Found %zu stations in system %u\n", availableStations.size(), systemID);
         std::fflush(stdout);
         _log(MARKET__TRACE, "MarketBot: Found %zu stations in system %u", availableStations.size(), systemID);
     }
@@ -327,16 +327,16 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
             if (quantity > 1) {
                 quantity = 1;
                 if (price > sMBotConf.main.MaxISKPerOrder) {
-                    std::printf("[%s] [MarketBot] Skipping itemID %u due to price %.2f ISK exceeding MaxISKPerOrder.\n", itemID, price);
+                    std::printf("[MarketBot] Skipping itemID %u due to price %.2f ISK exceeding MaxISKPerOrder.\n", itemID, price);
                     std::fflush(stdout);
                     _log(MARKET__TRACE, "Skipping itemID %u due to price %.2f ISK exceeding MaxISKPerOrder.", itemID, price);
                     continue;
                 }
-                std::printf("[%s] [MarketBot] Price too high for bulk, retrying with quantity = 1 for itemID %u.\n", itemID);
+                std::printf("[MarketBot] Price too high for bulk, retrying with quantity = 1 for itemID %u.\n", itemID);
                 std::fflush(stdout);
                 _log(MARKET__TRACE, "Price too high for bulk, retrying with quantity = 1 for itemID %u", itemID);
             } else {
-                std::printf("[%s] [MarketBot] Skipping itemID %u even at quantity = 1 due to price %.2f ISK.\n", itemID, price);
+                std::printf("[MarketBot] Skipping itemID %u even at quantity = 1 due to price %.2f ISK.\n", itemID, price);
                 std::fflush(stdout);
                 _log(MARKET__TRACE, "Skipping itemID %u even at quantity = 1 due to price %.2f ISK", itemID, price);
                 continue;
@@ -357,27 +357,27 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.isCorp = false;
         order.ownerID = BOT_OWNER_ID;
 
-        std::printf("[%s] [MarketBot] System %u maps to region %u via GetSystemData.\n", systemID, sysData.regionID);
+        std::printf("[MarketBot] System %u maps to region %u via GetSystemData.\n", systemID, sysData.regionID);
         std::fflush(stdout);
         _log(MARKET__TRACE, "System %u maps to region %u via GetSystemData", systemID, sysData.regionID);
 
         bool success = MarketDB::StoreOrder(order);
         if (success) {
             ++orderCount;
-            std::printf("[%s] [MarketBot] %s order created for typeID %u, qty %u, price %.2f ISK, station %u\n",
+            std::printf("[MarketBot] %s order created for typeID %u, qty %u, price %.2f ISK, station %u\n",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
             std::fflush(stdout);
             _log(MARKET__TRACE, "MarketBot: Creating %s order for typeID %u, qty %u, price %.2f, station %u, region %u",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID, order.regionID);
         } else {
-            std::printf("[%s] [MarketBot] Failed to store %s order for typeID %u at station %u\n",
+            std::printf("[MarketBot] Failed to store %s order for typeID %u at station %u\n",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
             std::fflush(stdout);
             _log(MARKET__ERROR, "MarketBot: Failed to store %s order for typeID %u at station %u",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
         }
     }
-    std::printf("[%s] [MarketBot] Created %d sell orders for system %u\n", orderCount, systemID);
+    std::printf("[MarketBot] Created %d sell orders for system %u\n", orderCount, systemID);
     std::fflush(stdout);
     return orderCount;
 }
@@ -390,7 +390,7 @@ std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
 
     std::vector<uint32> systemIDs;
     sDataMgr.GetRandomSystemIDs(5, systemIDs); // pulls a randomized list of systems
-    std::printf("[%s] [MarketBot] GetEligibleSystems(): Pulled %zu systems from StaticDataMgr\n", systemIDs.size());
+    std::printf("[MarketBot] GetEligibleSystems(): Pulled %zu systems from StaticDataMgr\n", systemIDs.size());
     std::fflush(stdout);
     _log(MARKET__TRACE, "GetEligibleSystems(): Pulled %zu systems from StaticDataMgr", systemIDs.size());
     return systemIDs;
@@ -406,7 +406,7 @@ uint32 MarketBotMgr::SelectRandomItemID() {
         itemID = GetRandomInt(10, MARKETBOT_MAX_ITEM_ID);
         type = sItemFactory.GetType(itemID);
 
-        std::printf("[%s] [MarketBot] Selected itemID %u after %u attempts.\n", itemID, tries);
+        std::printf("[MarketBot] Selected itemID %u after %u attempts.\n", itemID, tries);
         std::fflush(stdout);
         if (type && std::find(VALID_GROUPS.begin(), VALID_GROUPS.end(), type->groupID()) != VALID_GROUPS.end()) {
             _log(MARKET__TRACE, "Selected itemID %u after %u attempts", itemID, tries);
@@ -415,7 +415,7 @@ uint32 MarketBotMgr::SelectRandomItemID() {
     } while (tries < 50);
 
     // If we fail after 50 attempts, log a warning and return fallback value
-    std::printf("[%s] [MarketBot] Failed to select valid itemID after %u attempts. Returning fallback itemID = 34 (Tritanium)\n", tries);
+    std::printf("[MarketBot] Failed to select valid itemID after %u attempts. Returning fallback itemID = 34 (Tritanium)\n", tries);
     std::fflush(stdout);
     _log(MARKET__WARNING, "Failed to select valid itemID after %u attempts. Returning fallback itemID = 34 (Tritanium)", tries);
     return 34;  // Tritanium, as a safe default

@@ -45,11 +45,6 @@
 #include <execinfo.h>
 #endif
 
-#include <string>  // Required for GetCurrentTimestamp()
-
-// Timestamp utility function declaration
-std::string GetCurrentTimestamp();  // Returns current time as string for logs with printf
-
 #define LOG_CATEGORY(category) LOG_ ##category ,
 enum LogCategory
 {

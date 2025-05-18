@@ -29,24 +29,6 @@
 #include "utils/utils_hex.h"
 #include "threading/Mutex.h"
 
-#include <ctime>
-#include <sstream>
-#include <iomanip>
-
-// Utility: GetCurrentTimestamp() for use in printf logs; printf("[%s]...\n")
-std::string GetCurrentTimestamp() {
-    std::time_t now = std::time(nullptr);
-    std::tm local{};
-#ifdef _WIN32
-    localtime_s(&local, &now);
-#else
-    local = *std::localtime(&now);
-#endif
-    std::ostringstream oss;
-    oss << std::put_time(&local, "%H:%M:%S");
-    return oss.str();
-}
-
 Mutex mLogSys;
 
 FILE *logsys_log_file(nullptr);
