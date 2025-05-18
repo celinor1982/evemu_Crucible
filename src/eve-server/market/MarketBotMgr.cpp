@@ -359,7 +359,7 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.issued = GetFileTimeNow();
         order.isCorp = false;
         order.ownerID = BOT_OWNER_ID;
-        order.orderRange = -1; // -1 station, 0 solarsystem, 1-40 jumps, 32767 region
+        order.orderRange = -1; // -1 station, 0 solarsystem, 1-5 10 20 30 40 jumps, 32767 region
 
         std::printf("[MarketBot] System %u maps to region %u via GetSystemData.\n", systemID, sysData.regionID);
         std::fflush(stdout);
