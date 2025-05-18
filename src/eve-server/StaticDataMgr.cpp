@@ -91,6 +91,10 @@ void StaticDataMgr::Close()
 int StaticDataMgr::Initialize()
 {
     Populate();
+
+    std::printf("[StaticDataMgr] Loaded %zu solar systems into m_solSysData\n", m_solSysData.size());
+    std::fflush(stdout);  // Optional but helps ensure immediate console output
+
     sLog.Blue("    StaticDataMgr", "Static Data Manager Initialized.");
     return 1;
 }
@@ -281,7 +285,7 @@ void StaticDataMgr::Populate()
         m_systemData.emplace(row.GetInt(0), sysData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - startTime));
-/*
+//
     startTime = GetTimeMSeconds();
     ManagerDB::GetSolarSystemData(*res);
     while (res->GetRow(row)) {
@@ -297,7 +301,7 @@ void StaticDataMgr::Populate()
         m_solSysData.emplace(row.GetInt(0), sysData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static SolarSystem data sets loaded in %.3fms.", m_solSysData.size(), (GetTimeMSeconds() - startTime));
-*/
+//
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetWHSystemClass(*res);
