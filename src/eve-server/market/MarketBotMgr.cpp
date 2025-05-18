@@ -274,7 +274,7 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
             _log(MARKET__TRACE, "%s order created for typeID %u, qty %u, price %.2f ISK, station %u",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID);
         } else {
-            std::printf([MarketBot] Failed to store %s order for typeID %u at station %u\n",
+            std::printf("[MarketBot] Failed to store %s order for typeID %u at station %u\n",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.stationID);
             std::fflush(stdout);
             _log(MARKET__ERROR, "Failed to store %s order for typeID %u at station %u",
