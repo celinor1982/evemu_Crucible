@@ -98,6 +98,10 @@ void MarketBotMgr::ForceRun() {
 
 // Called on minute tick from EntityList
 void MarketBotMgr::Process(bool overrideTimer) {
+    std::printf("[MarketBot] MarketBot Process() invoked on tick. Timer ready = %s\n", m_updateTimer.Check() ? "true" : "false");
+    std::fflush(stdout);
+    _log(MARKET__TRACE, "MarketBot Process() invoked on tick. Timer ready = %s", m_updateTimer.Check() ? "true" : "false");
+
     std::printf("[MarketBot] Entered MarketBotMgr::Process()\n");
     std::fflush(stdout);
     _log(MARKET__TRACE, ">> Entered MarketBotMgr::Process()");
