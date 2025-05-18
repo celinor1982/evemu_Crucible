@@ -311,6 +311,10 @@ void ManagerDB::GetSystemData(DBQueryResult& res)
         codelog(DATABASE__ERROR, "Error in GetSystemData query: %s", res.error.c_str());
 }
 
+void ManagerDB::GetSolarSystemData(DBQueryResult& res) { // required for marketbot
+    GetSystemData(res);  // Reuse existing function
+}
+
 void ManagerDB::GetStaticData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,

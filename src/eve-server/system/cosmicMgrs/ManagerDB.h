@@ -36,6 +36,9 @@ public:
     static void GetOreBySSC(DBQueryResult& res);
     static void GetSkillList(DBQueryResult& res);
     static void GetSystemData(DBQueryResult& res);
+
+    static void GetSolarSystemData(DBQueryResult& res); // required for marketbot to pull random systems & stations.
+
     static void GetStaticData(DBQueryResult& res); // static items in a solar system
     static void GetMoonResouces(DBQueryResult& res);
     static void GetAgentLocation(DBQueryResult& res);
