@@ -58,7 +58,7 @@ int MarketBotDataMgr::Initialize() {
 }
 
 MarketBotMgr::MarketBotMgr()
-: /*m_updateTimer(20 * 60 * 1000)*/ { // default 20 minutes
+/*: m_updateTimer(20 * 60 * 1000)*/ { // default 20 minutes
     m_initalized = false;
 }
 
