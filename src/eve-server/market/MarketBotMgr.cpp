@@ -72,16 +72,18 @@ int MarketBotMgr::Initialize() {
     sMktBotDataMgr.Initialize();
 
     // START automation timer immediately
-    uint32_t delay_ms = sMBotConf.main.DataRefreshTime * 60 * 1000;
-    m_updateTimer.Start(delay_ms);
+    /*uint32_t delay_ms = sMBotConf.main.DataRefreshTime * 60 * 1000;*/
+    m_updateTimer.Start(0); // () set to delay_ms
 
-    std::printf("[MarketBot] Initialized with timer set to %u ms (%d min)\n", delay_ms, sMBotConf.main.DataRefreshTime);
+    std::printf("[MarketBot] Initialized — automation will trigger on next tick (Start(0) used)\n");
     std::fflush(stdout);
+
+    /*std::printf("[MarketBot] Initialized with timer set to %u ms (%d min)\n", delay_ms, sMBotConf.main.DataRefreshTime);
+    std::fflush(stdout);*/
 
     sLog.Blue("     MarketBotMgr", "Market Bot Manager Initialized.");
     return 1;
 }
-
 
 void MarketBotMgr::ForceRun() {
     std::printf("[MarketBot] ForceRun entered\n");
