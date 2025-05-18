@@ -467,6 +467,8 @@ PyResult MarketProxyService::PlaceCharOrder(PyCallArgs &call, PyInt* stationID, 
             // set an upper bound (this used to be a while loop that spun
             // forever in some cases)
             for (int i = 0; i < 1000; i++) {
+                std::printf("[Market DUMP] PlaceCharOrder(): finding buy order: %i, %i, %i, %.2f", typeID->value(), stationID->value(), quantity->value(), price->value());
+                std::fflush(stdout);
                 _log(MARKET__DUMP, "Mkt::PlaceCharOrder(): finding buy order: %i, %i, %i, %.2f", typeID->value(), stationID->value(), quantity->value(), price->value());
 
                 orderID = MarketDB::FindBuyOrder(typeID->value(), stationID->value(), quantity->value(), price->value());
@@ -475,8 +477,13 @@ PyResult MarketProxyService::PlaceCharOrder(PyCallArgs &call, PyInt* stationID, 
                     continue;
                 }
 
-                _log(MARKET__TRACE,
-                    "PlaceCharOrder - Found buy order #%u in %s for %s.",
+                std::printf("[Market Trace] PlaceCharOrder - Found buy order #%u in %s for %s.",
+                    orderID,
+                    stDataMgr.GetStationName(stationID->value()).c_str(),
+                    call.client->GetName()
+                ); // ---market trace
+                std::fflush(stdout);
+                _log(MARKET__TRACE, "PlaceCharOrder - Found buy order #%u in %s for %s.",
                     orderID,
                     stDataMgr.GetStationName(stationID->value()).c_str(),
                     call.client->GetName()
@@ -494,6 +501,9 @@ PyResult MarketProxyService::PlaceCharOrder(PyCallArgs &call, PyInt* stationID, 
                 );
 
                 if (!completedOrder) {
+                    std::printf("[Market Trace] Buy order %u rejected during execution.\n", orderID); // ---market trace
+                    std::fflush(stdout);
+                    _log(MARKET__TRACE, "Buy order %u rejected during execution.", orderID);
                     continue;
                 }
 
