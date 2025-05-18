@@ -34,7 +34,7 @@ public:
     void AddCommand(const char *cmd, const char *desc, int64 required_role, CommandFunc function);
     void ListCommands();
 
-    const std::map<std::string, CommandRecord*>& GetCommandList() const { return m_commands; } // gives external read-only access to the command list.
+    const std::map<std::string, CommandRecord*>& GetCommandList() const { return m_commands; } // ---commandlist update; gives external read-only access to the command list.
 
 protected:
     EVEServiceManager &m_services;
@@ -43,6 +43,6 @@ protected:
     std::map<std::string, CommandRecord *> m_commands;    //we own these pointers
 };
 
-extern CommandDispatcher* g_dispatcher;
+extern CommandDispatcher* g_dispatcher; // ---commandlist update
 
 #endif

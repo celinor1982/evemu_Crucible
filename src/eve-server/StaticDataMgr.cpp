@@ -23,10 +23,7 @@
 #include "station/StationDB.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
-
-//#include "station/StationDataMgr.h"
-
-#include <random>
+#include <random> // ---marketbot changes
 
 /*
  * DATA__ERROR          # specific "data not found but should be there" msgs
@@ -94,10 +91,10 @@ void StaticDataMgr::Close()
 int StaticDataMgr::Initialize()
 {
     Populate();
-
-    std::printf("[StaticDataMgr] Loaded %zu solar systems into m_solSysData\n", m_solSysData.size());
-    std::fflush(stdout);  // Optional but helps ensure immediate console output
-
+    // ---marketbot changes
+    std::printf("[StaticDataMgr] Loaded %zu solar systems into m_systemData\n", m_systemData.size());
+    std::fflush(stdout);
+    // ---
     sLog.Blue("    StaticDataMgr", "Static Data Manager Initialized.");
     return 1;
 }
@@ -288,7 +285,7 @@ void StaticDataMgr::Populate()
         m_systemData.emplace(row.GetInt(0), sysData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - startTime));
-//
+/*
     startTime = GetTimeMSeconds();
     ManagerDB::GetSolarSystemData(*res);
     while (res->GetRow(row)) {
@@ -304,7 +301,7 @@ void StaticDataMgr::Populate()
         m_solSysData.emplace(row.GetInt(0), sysData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static SolarSystem data sets loaded in %.3fms.", m_solSysData.size(), (GetTimeMSeconds() - startTime));
-//
+*/
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetWHSystemClass(*res);
@@ -2220,6 +2217,7 @@ void StaticDataMgr::AddOutpost(StationData &stData)
     }
 }
 
+// ---marketbot changes
 bool StaticDataMgr::GetStationListForSystem(uint32 systemID, std::vector<uint32>& stations) const {
     auto itr = m_stationList.find(systemID);
     if (itr != m_stationList.end() && !itr->second.empty()) {
@@ -2231,12 +2229,13 @@ bool StaticDataMgr::GetStationListForSystem(uint32 systemID, std::vector<uint32>
 
 void StaticDataMgr::GetRandomSystemIDs(size_t count, std::vector<uint32>& outSystems) const {
     outSystems.clear();
-    for (const auto& [systemID, data] : m_solSysData) {
+    for (const auto& [systemID, data] : m_systemData) {
         outSystems.push_back(systemID);
     }
     std::random_device rd;
     std::mt19937 g(rd());
     std::shuffle(outSystems.begin(), outSystems.end(), g);
+
     if (outSystems.size() > count) {
         outSystems.resize(count);
     }

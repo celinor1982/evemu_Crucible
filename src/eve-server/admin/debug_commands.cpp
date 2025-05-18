@@ -28,10 +28,10 @@
 #include "system/cosmicMgrs/DungeonMgr.h"
 #include "testing/test.h"
 #include "market/MarketBotMgr.h"
-#include "admin/CommandDispatcher.h"
-#include "EVE_Roles.h"
+#include "admin/CommandDispatcher.h" // ---commandlist update
+#include "EVE_Roles.h" // ---commandlist update
 
-// helper function to convert role strings into names
+// ---comandlist update; helper function to convert role strings into names
 const char* GetRoleName(int64_t roleValue) {
     static const std::map<int64_t, const char*> roleNames = {
         {Acct::Role::PLAYER, "PLAYER"},
@@ -58,7 +58,7 @@ const char* GetRoleName(int64_t roleValue) {
 }
 
 extern CommandDispatcher* g_dispatcher;
-
+//---
 PyResult Command_siglist(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
     /* this command is used to test anomaly system   -allan 21Feb15
      *   will list all anomalies, by systemID.
