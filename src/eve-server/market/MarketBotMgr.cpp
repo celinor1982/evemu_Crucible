@@ -265,7 +265,7 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         order.duration = sMBotConf.main.OrderLifetime;
         order.bid = true;
         order.issued = GetFileTimeNow();
-        order.isCorp = false;
+        order.isCorp = true;
         order.ownerID = BOT_OWNER_ID;
 
         bool success = MarketDB::StoreOrder(order);
@@ -357,7 +357,7 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.duration = sMBotConf.main.OrderLifetime;
         order.bid = false;
         order.issued = GetFileTimeNow();
-        order.isCorp = false;
+        order.isCorp = true;
         order.ownerID = BOT_OWNER_ID;
         order.orderRange = -1; // -1 station, 0 solarsystem, 1-5 10 20 30 40 jumps, 32767 region
 
