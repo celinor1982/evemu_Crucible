@@ -365,6 +365,10 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         std::fflush(stdout);
         _log(MARKET__TRACE, "System %u maps to region %u via GetSystemData", systemID, sysData.regionID);
 
+        std::printf("[MarketBot] Placing sell order with orderRange: %u\n", order.orderRange);
+        std::fflush(stdout);
+        _log(MARKET__TRACE, "MarketBot: Storing sell order with orderRange = %u", order.orderRange);
+
         bool success = MarketDB::StoreOrder(order);
         if (success) {
             ++orderCount;
