@@ -96,7 +96,7 @@ namespace Market {
         bool isCorp :1;
         bool contraband :1;
         uint8 jumps;
-        int16 orderRange;
+        uint32 orderRange;
         uint16 typeID;
         uint16 accountKey;
         uint32 orderID;
