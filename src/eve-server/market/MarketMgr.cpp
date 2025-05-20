@@ -512,14 +512,10 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     reason += "DESC:  Selling items in ";
     reason += stDataMgr.GetStationName(stationID).c_str();
     
-    std::printf("[Market Debug] ExecuteBuyOrder: %u ISK from escrow to %u (%.2f x %u = %lu)\n"; // ---buyorder logging
+    std::printf("[Market Debug] ExecuteBuyOrder: %u ISK from escrow to %u (%.2f x %u = %lu)\n",
+    stationID, seller->GetCharacterID(), price, qtySold, roundedAmount); // --- buyorder update; // ---buyorder logging
     _log(MARKET__DEBUG, "ExecuteBuyOrder: %u ISK from escrow to %u (%.2f x %u = %lu)",
-
-    std::printf("[Market Debug] Buyer balance before: %.2f\n", buyer->GetBalance()); // ---buyorder update
-    std::printf("[Market Debug] Seller balance before: %.2f\n", seller->GetBalance()); // ---buyorder update
-    std::fflush(stdout); // ---buyorder logging; flushes once after all printf
-
-     stationID, seller->GetCharacterID(), price, qtySold, roundedAmount); // --- buyorder update
+    stationID, seller->GetCharacterID(), price, qtySold, roundedAmount); // --- buyorder update
 
     // this is fulfilling a buy order.  seller will receive isk from escrow if buyer is player or corp
     if (isPlayer or isCorp) {
@@ -669,10 +665,6 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
         std::printf("[Market Warning] Rounded transaction amount is ZERO — possible logic error (price: %.4f, qty: %u)\n", price, sellQuantity); // ---sellorder logging
         std::fflush(stdout);
         _log(MARKET__WARNING, "Rounded transaction amount is ZERO — possible logic error (price: %.4f, qty: %u)", price, sellQuantity);
-
-        std::printf("[Market Debug] Buyer balance before: %.2f\n", buyer->GetBalance()); // ---sellorder update
-        std::printf("[Market Debug] Seller balance before: %.2f\n", seller->GetBalance()); // ---sellorder update
-        std::fflush(stdout); // ---sellorder logging; flushes once after all printf
     }
     // ---sellorder update
 
@@ -718,10 +710,6 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
 
     std::printf("[Market Debug] TransferFunds: %u pays SCC -> %.2f ISK (tax)\n", oInfo.ownerID, static_cast<double>(roundedTax)); // ---sellorder logging
     _log(MARKET__DEBUG, "TransferFunds: %u pays SCC -> %.2f ISK (tax)", oInfo.ownerID, static_cast<double>(roundedTax)); // ---sellorder update
-
-    std::printf("[Market Debug] Buyer balance before: %.2f\n", buyer->GetBalance()); // ---sellorder update
-    std::printf("[Market Debug] Seller balance before: %.2f\n", seller->GetBalance()); // ---sellorder update
-    std::fflush(stdout); // ---sellorder logging; flushes once after all printf
 
     AccountService::TransferFunds(
         oInfo.ownerID,
