@@ -47,7 +47,7 @@ boolean can use either 0/1 OR true/false.
         <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
         <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
         <MaxThreadReport>10</MaxThreadReport>
-        <UseMarketBot>false</UseMarketBot><!-- this is coded in eve gate.  not needed here -->
+		<!--UseMarketBot>false</UseMarketBot--><!-- this is coded in eve gate.  not needed here -->
         <DisableIGB>false</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
         <ModuleAutoOff>true</ModuleAutoOff><!-- bool  - automatically deactivate rr-type module when target is full -->
