@@ -21,6 +21,8 @@
 #include "market/MarketMgr.h"
 #include "station/StationDataMgr.h"
 
+#include <cstdint> // ---sellorder update
+
 /*
  * MARKET__ERROR
  * MARKET__WARNING
@@ -410,7 +412,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     }
 
     double totalPrice = static_cast<double>(price) * static_cast<double>(qtySold); // --- buyorder update
-    uint64 roundedAmount = static_cast<uint64>(std::round(totalPrice)); // --- buyorder update
+    uint64_t roundedAmount = static_cast<uint64_t>(std::round(totalPrice)); // --- buyorder update
 
     std::string reason = "DESC:  Buying items in ";
     reason += stDataMgr.GetStationName(stationID).c_str();
@@ -420,7 +422,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     // --- buyorder update
     float taxRate = EvEMath::Market::SalesTax(sConfig.market.salesTax, level); 
     double taxValue = taxRate * totalPrice;
-    uint64 roundedTax = static_cast<uint64>(std::round(taxValue));
+    uint64_t roundedTax = static_cast<uint64_t>(std::round(taxValue));
 
     if (roundedAmount == 0) {
         _log(MARKET__WARNING,
@@ -605,7 +607,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
 
     /** @todo  get/implement accountKey here.... */
     double totalPrice = static_cast<double>(price) * static_cast<double>(sellQuantity); // ---sellorder update; original code float causing issues with when small amounts are bought
-    uint64 roundedAmount = static_cast<uint64>(std::round(totalPrice)); // ---sellorder update
+    uint64_t roundedAmount = static_cast<uint64_t>(std::round(totalPrice)); // ---sellorder update
 
     // send wallet blink event and record the transaction in their journal.
     std::string reason = "DESC:  Buying market items in ";
@@ -657,7 +659,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
         taxEvasionLevel
     );
     double taxAmount = taxRate * static_cast<double>(roundedAmount); // ---sellorder update; dont use floats, rounds to 0 in most cases
-    uint64 roundedTax = static_cast<uint64>(std::round(taxAmount)); // ---sellorder update
+    uint64_t roundedTax = static_cast<uint64_t>(std::round(taxAmount)); // ---sellorder update
 
     _log(MARKET__DEBUG, "TransferFunds: %u pays SCC -> %.2f ISK (tax)", oInfo.ownerID, static_cast<double>(roundedTax)); // ---sellorder update
 
