@@ -305,6 +305,8 @@ void MarketMgr::InvalidateOrdersCache(uint32 regionID, uint32 typeID) {
 bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef iRef, uint32 quantity, bool useCorp, uint32 typeID, uint32 stationID, double price, uint16 accountKey/*Account::KeyType::Cash*/) {
     Market::OrderInfo oInfo = Market::OrderInfo();
     if (!MarketDB::GetOrderInfo(orderID, oInfo)) {
+        std::printf("[Market Error] ExecuteBuyOrder - Failed to get order info for #%u.\n", orderID); // ---buyorder logging
+        std::fflush(stdout);
         _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to get order info for #%u.", orderID);
 
         return false;
@@ -325,6 +327,8 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         isTrader = true;
     } else {
         // none of above conditionals hit....
+        std::printf("[Market Warning] ExecuteBuyOrder - ownerID %u not corp, not char, not system, not joe.\n", oInfo.ownerID); // ---buyorder logging
+        std::fflush(stdout);
         _log(MARKET__WARNING, "ExecuteBuyOrder - ownerID %u not corp, not char, not system, not joe.", oInfo.ownerID);
 
         // send the player some kind of notification about the market order, some standard market error should suffice
@@ -342,15 +346,21 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     if (iRef->quantity() == oInfo.quantity) {
         qtyStatus = Market::QtyStatus::Complete;
         qtySold = oInfo.quantity;
-
+        
+        std::printf("[Market Trace] ExecuteBuyOrder - order is Complete\n"); // ---buyorder logging
+        std::fflush(stdout);
         _log(MARKET__TRACE, "ExecuteBuyOrder - order is Complete");
 
         if (isPlayer) {
+            std::printf("[Market Trace] ExecuteBuyOrder - is player\n"); // ---buyorder logging
+            std::fflush(stdout);
             _log(MARKET__TRACE, "ExecuteBuyOrder - is player");
 
             // use the "owner change" packet to alert the buyer of the new item
             iRef->Donate(oInfo.ownerID, stationID, flagHangar, true);
         } else if (isCorp) {
+            std::printf("[Market Trace] ExecuteBuyOrder - is corp\n"); // ---buyorder logging
+            std::fflush(stdout);
             _log(MARKET__TRACE, "ExecuteBuyOrder - is corp");
 
             // use the "owner change" packet to alert the buyer of the new item
@@ -359,10 +369,14 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
             // Trader joe is a placeholder ID that deletes every item sold to
             // him. Other trader accounts behave similarly to Trader Joe, but we
             // keep valid journal entries for them
+            std::printf("[Market Trace] ExecuteBuyOrder - trader or trader joe encountered\n"); // ---buyorder logging
+            std::fflush(stdout);
             _log(MARKET__TRACE, "ExecuteBuyOrder - trader or trader joe encountered");
 
             shouldDeleteItem = true;
         } else {
+            std::printf("[Market Trace] ExecuteBuyOrder - unhandled edge case\n"); // ---buyorder logging
+            std::fflush(stdout);
             _log(MARKET__TRACE, "ExecuteBuyOrder - unhandled edge case");
         }
 
@@ -370,7 +384,9 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         // The seller is selling more items than the buy order is bidding for.
         qtyStatus = Market::QtyStatus::Over;
         qtySold = oInfo.quantity;
-
+        
+        std::printf("[Market Trace] ExecuteBuyOrder - order is Over\n"); // ---buyorder logging
+        std::fflush(stdout);
         _log(MARKET__TRACE, "ExecuteBuyOrder - order is Over");
 
         if (isTraderJoe || isTrader) {
@@ -379,10 +395,14 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
             // trader NPCs.
             iRef->AlterQuantity(-oInfo.quantity, true);
         } else {
+            std::printf("[Market Trace] ExecuteBuyOrder - buyer is something else?\n"); // ---buyorder logging
+            std::fflush(stdout);
             _log(MARKET__TRACE, "ExecuteBuyOrder - buyer is something else?");
 
             InventoryItemRef siRef = iRef->Split(oInfo.quantity);
             if (siRef.get() == nullptr) {
+                std::printf("[Market Error] ExecuteBuyOrder - Failed to split %u %s.\n", siRef->itemID(), siRef->name()); // ---buyorder logging
+                std::fflush(stdout);
                 _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to split %u %s.", siRef->itemID(), siRef->name());
                 return false;
             }
@@ -398,7 +418,9 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         // The seller is selling fewer items than the buy order is bidding for.
         qtyStatus = Market::QtyStatus::Under;
         qtySold = iRef->quantity();
-
+        
+        std::printf("[Market Trace] ExecuteBuyOrder - order is Under\n"); // ---buyorder logging
+        std::fflush(stdout);
         _log(MARKET__TRACE, "ExecuteBuyOrder - order is Under");
 
         // use the "owner change" packet to alert the buyer of the new item
@@ -425,6 +447,9 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     uint64_t roundedTax = static_cast<uint64_t>(std::round(taxValue));
 
     if (roundedAmount == 0) {
+        std::printf("[Market Warning] ExecuteBuyOrder - Rounded ISK amount is ZERO. Possible logic error. Price: %.4f, Qty: %u, Total (raw): %.6f\n", // ---buyorder logging
+            price, qtySold, totalPrice);
+            std::fflush(stdout);
         _log(MARKET__WARNING,
             "ExecuteBuyOrder - Rounded ISK amount is ZERO. Possible logic error. Price: %.4f, Qty: %u, Total (raw): %.6f",
             price, qtySold, totalPrice);
@@ -455,14 +480,20 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         }
 
         sellerWalletOwnerID = seller->GetCorporationID();
-
+        
+        std::printf("[Market Debug] ExecuteBuyOrder - Seller is Corp: Price: %.2f, Tax: %.2f\n", static_cast<double>(roundedAmount), static_cast<double>(roundedTax));
+        std::fflush(stdout); // ---buyorder logging
         _log(MARKET__DEBUG, "ExecuteBuyOrder - Seller is Corp: Price: %.2f, Tax: %.2f", static_cast<double>(roundedAmount), static_cast<double>(roundedTax));
     } else {
         sellerWalletOwnerID = seller->GetCharacterID();
-
+        
+        std::printf("[Market Debug] ExecuteBuyOrder - Seller is Player: Price: %.2f, Tax: %.2f\n", static_cast<double>(roundedAmount), static_cast<double>(roundedTax));
+        std::fflush(stdout); // ---buyorder logging
         _log(MARKET__DEBUG, "ExecuteBuyOrder - Seller is Player: Price: %.2f, Tax: %.2f", static_cast<double>(roundedAmount), static_cast<double>(roundedTax));
     }
-
+    std::printf("[Market Debug] ExecuteBuyOrder Tax: %.4f rate on %lu ISK = %lu ISK", 
+     taxRate, roundedAmount, roundedTax);
+    std::fflush(stdout); // ---buyorder logging
     _log(MARKET__DEBUG, "ExecuteBuyOrder Tax: %.4f rate on %lu ISK = %lu ISK", 
      taxRate, roundedAmount, roundedTax); // --- buyorder update
 
@@ -480,8 +511,14 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     reason.clear();
     reason += "DESC:  Selling items in ";
     reason += stDataMgr.GetStationName(stationID).c_str();
-
+    
+    std::printf("[Market Debug] ExecuteBuyOrder: %u ISK from escrow to %u (%.2f x %u = %lu)\n"; // ---buyorder logging
     _log(MARKET__DEBUG, "ExecuteBuyOrder: %u ISK from escrow to %u (%.2f x %u = %lu)",
+
+    std::printf("[Market Debug] Buyer balance before: %.2f\n", buyer->GetBalance()); // ---buyorder update
+    std::printf("[Market Debug] Seller balance before: %.2f\n", seller->GetBalance()); // ---buyorder update
+    std::fflush(stdout); // ---buyorder logging; flushes once after all printf
+
      stationID, seller->GetCharacterID(), price, qtySold, roundedAmount); // --- buyorder update
 
     // this is fulfilling a buy order.  seller will receive isk from escrow if buyer is player or corp
@@ -528,6 +565,8 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     data.typeID         = typeID;
 
     if (!MarketDB::RecordTransaction(data)) {
+        std::printf("[Market Error] ExecuteBuyOrder - Failed to record sale side of transaction.\n"); // ---buyorder logging
+        std::fflush(stdout);
         _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to record sale side of transaction.");
     }
 
@@ -537,6 +576,8 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     data.memberID       = oInfo.ownerID; // TODO: change this to the corp member ID if useCorp is 1?
 
     if (!MarketDB::RecordTransaction(data)) {
+        std::printf("[Market Error] ExecuteBuyOrder - Failed to record sale side of transaction.\n"); // ---buyorder logging
+        std::fflush(stdout);
         _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to record buy side of transaction.");
     }
 
@@ -544,10 +585,14 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     // for purchase
     if (qtyStatus == Market::QtyStatus::Under) {
         uint32 newQty(oInfo.quantity - qtySold);
-
+        
+        std::printf("[Market Trace] ExecuteBuyOrder - Partially satisfied order #%u, altering quantity to %u.\n", orderID, newQty); // ---buyorder logging
+        std::fflush(stdout);
         _log(MARKET__TRACE, "ExecuteBuyOrder - Partially satisfied order #%u, altering quantity to %u.", orderID, newQty);
 
         if (!MarketDB::AlterOrderQuantity(orderID, newQty)) {
+            std::printf("[Market Error] ExecuteBuyOrder - Failed to alter quantity of order #%u.\n", orderID); // ---buyorder logging
+            std::fflush(stdout);
             _log(MARKET__ERROR, "ExecuteBuyOrder - Failed to alter quantity of order #%u.", orderID);
             return false;
         }
@@ -583,6 +628,8 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
     // attempt to retrieve information about the sell order, fail if not found
     Market::OrderInfo oInfo = Market::OrderInfo();
     if (!MarketDB::GetOrderInfo(orderID, oInfo)) {
+        std::printf("[Market Error] ExecuteSellOrder - Failed to get info about sell order %u.\n", orderID); // ---sellorder logging
+        std::fflush(stdout);
         _log(MARKET__ERROR,
             "ExecuteSellOrder - Failed to get info about sell order %u.",
             orderID
@@ -614,10 +661,18 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
     reason += stDataMgr.GetStationName(stationID).c_str();
 
     // ---sellorder update; sanity check for 0 Isk transactions
+    std::printf("[Market Debug] TransferFunds: %u pays %u -> %.2f ISK\n", buyer->GetCharacterID(), oInfo.ownerID, static_cast<double>(roundedAmount)); // ---sellorder logging
+    std::fflush(stdout);
     _log(MARKET__DEBUG, "TransferFunds: %u pays %u -> %.2f ISK", buyer->GetCharacterID(), oInfo.ownerID, static_cast<double>(roundedAmount)); 
 
     if (roundedAmount == 0) {
+        std::printf("[Market Warning] Rounded transaction amount is ZERO — possible logic error (price: %.4f, qty: %u)\n", price, sellQuantity); // ---sellorder logging
+        std::fflush(stdout);
         _log(MARKET__WARNING, "Rounded transaction amount is ZERO — possible logic error (price: %.4f, qty: %u)", price, sellQuantity);
+
+        std::printf("[Market Debug] Buyer balance before: %.2f\n", buyer->GetBalance()); // ---sellorder update
+        std::printf("[Market Debug] Seller balance before: %.2f\n", seller->GetBalance()); // ---sellorder update
+        std::fflush(stdout); // ---sellorder logging; flushes once after all printf
     }
     // ---sellorder update
 
@@ -661,7 +716,12 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
     double taxAmount = taxRate * static_cast<double>(roundedAmount); // ---sellorder update; dont use floats, rounds to 0 in most cases
     uint64_t roundedTax = static_cast<uint64_t>(std::round(taxAmount)); // ---sellorder update
 
+    std::printf("[Market Debug] TransferFunds: %u pays SCC -> %.2f ISK (tax)\n", oInfo.ownerID, static_cast<double>(roundedTax)); // ---sellorder logging
     _log(MARKET__DEBUG, "TransferFunds: %u pays SCC -> %.2f ISK (tax)", oInfo.ownerID, static_cast<double>(roundedTax)); // ---sellorder update
+
+    std::printf("[Market Debug] Buyer balance before: %.2f\n", buyer->GetBalance()); // ---sellorder update
+    std::printf("[Market Debug] Seller balance before: %.2f\n", seller->GetBalance()); // ---sellorder update
+    std::fflush(stdout); // ---sellorder logging; flushes once after all printf
 
     AccountService::TransferFunds(
         oInfo.ownerID,
@@ -693,10 +753,14 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
     }
 
     if (orderConsumed) {
+        std::printf("[Market Trace] ExecuteSellOrder - satisfied order #%u, deleting.\n", orderID); // ---sellorder logging
+        std::fflush(stdout);
         _log(MARKET__TRACE, "ExecuteSellOrder - satisfied order #%u, deleting.", orderID);
 
         PyRep* order = MarketDB::GetOrderRow(orderID);
         if (!MarketDB::DeleteOrder(orderID)) {
+            std::printf("[Market Error] ExecuteSellOrder - Failed to delete order #%u.\n", orderID); // ---sellorder logging
+            std::fflush(stdout);
             _log(MARKET__ERROR, "ExecuteSellOrder - Failed to delete order #%u.", orderID);
             return;
         }
@@ -706,10 +770,14 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
         SendOnOwnOrderChanged(seller, orderID, Market::Action::Expiry, useCorp, order);
     } else {
         uint32 newQty(oInfo.quantity - sellQuantity);
-
+        
+        std::printf("[Market Trace] ExecuteSellOrder - Partially satisfied order #%u, altering quantity to %u.\n", orderID, newQty); // ---sellorder logging
+        std::fflush(stdout);
         _log(MARKET__TRACE, "ExecuteSellOrder - Partially satisfied order #%u, altering quantity to %u.", orderID, newQty);
 
         if (!MarketDB::AlterOrderQuantity(orderID, newQty)) {
+            std::printf("[Market Error] ExecuteSellOrder - Failed to alter quantity of order #%u.\n", orderID); // ---sellorder logging
+            std::fflush(stdout);
             _log(MARKET__ERROR, "ExecuteSellOrder - Failed to alter quantity of order #%u.", orderID);
             return;
         }
@@ -733,6 +801,8 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
     data.typeID         = typeID;
 
     if (!MarketDB::RecordTransaction(data)) {
+        std::printf("[Market Error] ExecuteSellOrder - Failed to record buy side of transaction.\n"); // ---sellorder logging
+        std::fflush(stdout);
         _log(MARKET__ERROR, "ExecuteSellOrder - Failed to record buy side of transaction.");
     }
 
@@ -742,10 +812,11 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
     data.memberID       = oInfo.ownerID; // TODO: change this to the corp member ID if useCorp is 1?
 
     if (!MarketDB::RecordTransaction(data)) {
+        std::printf("[Market Error] ExecuteSellOrder - Failed to record sell side of transaction.\n"); // ---sellorder logging
+        std::fflush(stdout);
         _log(MARKET__ERROR, "ExecuteSellOrder - Failed to record sell side of transaction.");
     }
 }
-
 
 // after finding price data from Crucible, this may be moot.   -allan 28Feb21
 void MarketMgr::SetBasePrice()
