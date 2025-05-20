@@ -37,7 +37,7 @@
 #include "exploration/Probes.h"
 #include "map/MapDB.h"
 #include "market/MarketMgr.h"
-#include "market/MarketBotMgr.h"
+//#include "market/MarketBotMgr.h"
 #include "missions/MissionDataMgr.h"
 #include "station/Station.h"
 #include "system/DestinyManager.h"
@@ -47,7 +47,6 @@
 #include "system/cosmicMgrs/WormholeMgr.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 #include "corporation/CorporationDB.h"
-#include "npc/Drone.h"
 
 EntityList::EntityList()
 : m_services(nullptr),
@@ -220,25 +219,6 @@ void EntityList::Process() {
 
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
-
-        // === One-time drone clearing block ===
-        for (auto& [sysID, sysMgr] : m_systems) {
-            if (sysMgr == nullptr)
-                continue;
-
-            std::map<uint32, SystemEntity*> entities = sysMgr->GetEntities();
-            for (auto& [id, entity] : entities) {
-                if (entity->IsDroneSE()) {
-                    DroneSE* drone = entity->GetDroneSE();
-                    if (drone != nullptr) {
-                        _log(ITEM__TRACE, "EntityList::Process - Removing Drone %s(%u)", drone->GetName(), drone->GetID());
-                        drone->RemoveDrone();
-                    }
-                }
-            }
-        }
-        // === End drone clearing block ===
-
         double profileStartTime(GetTimeUSeconds());
 
         ++m_stamp;
@@ -282,7 +262,7 @@ void EntityList::Process() {
                     cur.second->UpdateData();   // update active system timers and dynamic data every 5m
             }
             if (m_minutes % 15 == 0) { // ~15m
-                sMktBotMgr.Process();  // 15m to 30m
+                //sMktBotMgr.Process();  // 15m to 30m
                 sConsole.UpdateStatus();
             }
             if (m_minutes % 60 == 0) { // ~1h
