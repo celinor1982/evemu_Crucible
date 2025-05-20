@@ -34,6 +34,7 @@ private:
 #define sMktBotDataMgr \
 ( MarketBotDataMgr::get() )
 
+
 class MarketBotMgr
 : public Singleton<MarketBotMgr>
 {
@@ -42,25 +43,14 @@ public:
     ~MarketBotMgr() { /* do nothing here */ }
 
     int Initialize();
-    void Process(bool overrideTimer = false);
+    void Process();
 
     void AddSystem();
     void RemoveSystem();
-    // ---marketbot changes
-    int PlaceBuyOrders(uint32 systemID);
-    int PlaceSellOrders(uint32 systemID);
-    int ExpireOldOrders();
 
-    std::vector<uint32> GetEligibleSystems();
-    uint32 SelectRandomItemID();
-    uint32 GetRandomQuantity(uint32 groupID);
-    double CalculateBuyPrice(uint32 itemID);
-    double CalculateSellPrice(uint32 itemID);
-
-    void ForceRun(); // debug command to force MarketBot to run first cycle to generate NPC buy and sell orders.
-    // ---
 private:
     Timer m_updateTimer;
+
     bool m_initalized;
 };
 
