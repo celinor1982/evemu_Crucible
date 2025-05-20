@@ -220,7 +220,7 @@ public:
     /**
      * Primary public interface:
      */
-    bool            AlterBalance(float amount, uint8 type);
+    bool            AlterBalance(double amount, uint8 type);  // ---sellorder update
     void            SetLocation(uint32 stationID, SystemData& data);
     void            JoinCorporation(const CorpData& data);
     void            SetDescription(const char *newDescription);
