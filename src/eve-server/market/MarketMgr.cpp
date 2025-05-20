@@ -409,12 +409,26 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         }
     }
 
-    float money = price * qtySold;
+    double totalPrice = static_cast<double>(price) * static_cast<double>(qtySold); // --- buyorder update
+    uint64 roundedAmount = static_cast<uint64>(std::round(totalPrice)); // --- buyorder update
+
     std::string reason = "DESC:  Buying items in ";
     reason += stDataMgr.GetStationName(stationID).c_str();
     uint32 sellerWalletOwnerID = 0;
     uint8 level = seller->GetChar ()->GetSkillLevel (EvESkill::Accounting);
-    float tax = EvEMath::Market::SalesTax (sConfig.market.salesTax, level) * money;
+    
+    // --- buyorder update
+    float taxRate = EvEMath::Market::SalesTax(sConfig.market.salesTax, level); 
+    double taxValue = taxRate * totalPrice;
+    uint64 roundedTax = static_cast<uint64>(std::round(taxValue));
+
+    if (roundedAmount == 0) {
+        _log(MARKET__WARNING,
+            "ExecuteBuyOrder - Rounded ISK amount is ZERO. Possible logic error. Price: %.4f, Qty: %u, Total (raw): %.6f",
+            price, qtySold, totalPrice);
+        // Optional: You could also cancel the transaction entirely if desired:
+        // return false;
+    } // --- buyorder update
 
     // Note: The original item that was for sale still has not been deleted up
     // until this point, because we still might need data from it to do some of
@@ -440,17 +454,20 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
 
         sellerWalletOwnerID = seller->GetCorporationID();
 
-        _log(MARKET__DEBUG, "ExecuteBuyOrder - Seller is Corp: Price: %.2f, Tax: %.2f", money, tax);
+        _log(MARKET__DEBUG, "ExecuteBuyOrder - Seller is Corp: Price: %.2f, Tax: %.2f", static_cast<double>(roundedAmount), static_cast<double>(roundedTax));
     } else {
         sellerWalletOwnerID = seller->GetCharacterID();
 
-        _log(MARKET__DEBUG, "ExecuteBuyOrder - Seller is Player: Price: %.2f, Tax: %.2f", money, tax);
+        _log(MARKET__DEBUG, "ExecuteBuyOrder - Seller is Player: Price: %.2f, Tax: %.2f", static_cast<double>(roundedAmount), static_cast<double>(roundedTax));
     }
+
+    _log(MARKET__DEBUG, "ExecuteBuyOrder Tax: %.4f rate on %lu ISK = %lu ISK", 
+     taxRate, roundedAmount, roundedTax); // --- buyorder update
 
     AccountService::TransferFunds (
         sellerWalletOwnerID,
         corpSCC,
-        tax,
+        static_cast<double>(roundedTax), // --- buyorder update
         reason.c_str (),
         Journal::EntryType::TransactionTax,
         orderID,
@@ -462,13 +479,16 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     reason += "DESC:  Selling items in ";
     reason += stDataMgr.GetStationName(stationID).c_str();
 
+    _log(MARKET__DEBUG, "ExecuteBuyOrder: %u ISK from escrow to %u (%.2f x %u = %lu)",
+     stationID, seller->GetCharacterID(), price, qtySold, roundedAmount); // --- buyorder update
+
     // this is fulfilling a buy order.  seller will receive isk from escrow if buyer is player or corp
     if (isPlayer or isCorp) {
         // give the money to the seller from the escrow acct at station
         AccountService::TransferFunds(
             stDataMgr.GetOwnerID(stationID),
             seller->GetCharacterID(),
-            money,
+            static_cast<double>(roundedAmount), // --- buyorder update
             reason.c_str(),
             Journal::EntryType::MarketTransaction,
             orderID,
@@ -480,7 +500,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
         AccountService::TransferFunds(
             oInfo.ownerID,
             seller->GetCharacterID(),
-            money,
+            static_cast<double>(roundedAmount), // --- buyorder update
             reason.c_str(),
             Journal::EntryType::MarketTransaction,
             orderID,
@@ -490,7 +510,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     }
 
     // add data to StatisticMgr
-    sStatMgr.Add(Stat::iskMarket, money);
+    sStatMgr.Add(Stat::iskMarket, static_cast<double>(roundedAmount)); // --- buyorder update
 
     // record the sell transaction
     Market::TxData data = Market::TxData();
@@ -499,7 +519,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     data.isCorp         = useCorp;
     data.memberID       = seller->GetCharacterID(); // TODO: change this to the corp member ID if useCorp is 1?
     data.clientID       = oInfo.ownerID;
-    data.price          = price;
+    data.price = static_cast<double>(roundedAmount) / qtySold; // --- buyorder update
     data.quantity       = qtySold;
     data.stationID      = stationID;
     data.regionID       = sDataMgr.GetStationRegion(stationID);
