@@ -51,7 +51,8 @@ static const std::vector<RoleDisplayInfo> roleDisplayOrder = {
 };
 
 extern CommandDispatcher* g_dispatcher;
-//---
+// ---commandlist update
+
 PyResult Command_siglist(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
     /* this command is used to test anomaly system   -allan 21Feb15
      *   will list all anomalies, by systemID.
@@ -305,6 +306,7 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, EVEServiceManager &s
     return new PyString(reply);
 }
 
+// ---commandlist update
 PyResult Command_commandlist(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
     std::ostringstream out;
     out << "<b>Available Commands (Grouped by Role)</b><br><br>";
@@ -341,6 +343,7 @@ PyResult Command_commandlist(Client* pClient, CommandDB* db, EVEServiceManager& 
     pClient->SendInfoModalMsg(out.str().c_str());
     return new PyString("Command list sent.");
 }
+// ---commandlist update
 
 PyResult Command_secstatus(Client* pClient, CommandDB* db, EVEServiceManager &services, const Seperator& args) {
     /*
