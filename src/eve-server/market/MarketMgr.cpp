@@ -584,17 +584,26 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
     }
 
     /** @todo  get/implement accountKey here.... */
-    float money = price * sellQuantity;
+    double totalPrice = static_cast<double>(price) * static_cast<double>(sellQuantity); // ---sellorder update; original code float causing issues with when small amounts are bought
+    uint64 roundedAmount = static_cast<uint64>(std::round(totalPrice)); // ---sellorder update
 
     // send wallet blink event and record the transaction in their journal.
     std::string reason = "DESC:  Buying market items in ";
     reason += stDataMgr.GetStationName(stationID).c_str();
 
+    // ---sellorder update; sanity check for 0 Isk transactions
+    _log(MARKET__DEBUG, "TransferFunds: %u pays %u -> %.2f ISK", buyer->GetCharacterID(), oInfo.ownerID, static_cast<double>(roundedAmount)); 
+
+    if (roundedAmount == 0) {
+        _log(MARKET__WARNING, "Rounded transaction amount is ZERO — possible logic error (price: %.4f, qty: %u)", price, sellQuantity);
+    }
+    // ---sellorder update
+
     // this will throw if funds are not available.
     AccountService::TransferFunds(
         buyer->GetCharacterID(),
         oInfo.ownerID,
-        money,
+        static_cast<double>(roundedAmount), // ---sellorder update
         reason.c_str(),
         Journal::EntryType::MarketTransaction,
         orderID,
@@ -622,16 +631,20 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
         taxEvasionLevel = pSeller->GetChar()->GetSkillLevel(EvESkill::TaxEvasion);
     }
 
-    float tax = EvEMath::Market::SalesTax (
+    float taxRate = EvEMath::Market::SalesTax (
         sConfig.market.salesTax,
         accountingLevel,
         taxEvasionLevel
-    ) * money;
+    );
+    double taxAmount = taxRate * static_cast<double>(roundedAmount); // ---sellorder update; dont use floats, rounds to 0 in most cases
+    uint64 roundedTax = static_cast<uint64>(std::round(taxAmount)); // ---sellorder update
+
+    _log(MARKET__DEBUG, "TransferFunds: %u pays SCC -> %.2f ISK (tax)", oInfo.ownerID, static_cast<double>(roundedTax)); // ---sellorder update
 
     AccountService::TransferFunds(
         oInfo.ownerID,
         corpSCC,
-        tax,
+        static_cast<double>(roundedTax), // ---sellorder update
         reason.c_str(),
         Journal::EntryType::TransactionTax,
         orderID,
@@ -650,7 +663,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
     iRef->Donate(buyer->GetCharacterID(), stationID, flagHangar, true);
 
     // add data to StatisticMgr
-    sStatMgr.Add(Stat::iskMarket, money);
+    sStatMgr.Add(Stat::iskMarket, static_cast<double>(roundedAmount)); // ---selloder update
 
     Client* seller(nullptr);
     if (IsCharacterID(oInfo.ownerID)) {
@@ -691,7 +704,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, uint32 sellQuant
     data.isCorp         = useCorp;
     data.memberID       = buyer->GetCharacterID(); // TODO: change this to the corp member ID if useCorp is 1?
     data.clientID       = oInfo.ownerID;
-    data.price          = price;
+    data.price          = static_cast<double>(roundedAmount) / sellQuantity; // ---sellorder update
     data.quantity       = sellQuantity;
     data.stationID      = stationID;
     data.regionID       = sDataMgr.GetStationRegion(stationID);
