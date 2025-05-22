@@ -295,6 +295,51 @@ PyResult AccountService::GiveCashFromCorpAccount(PyCallArgs &call, PyInt* toID, 
     return nullptr;
 }
 
+// ---marketorder update
+bool AccountService::MarketTransfer(
+    uint32 fromID,
+    uint32 toID,
+    double amount,
+    const char* reason,
+    uint8 entryType,
+    uint32 refID,
+    uint16 fromAccountKey,
+    uint16 toAccountKey
+) {
+    if (amount <= 0.0) {
+        std::printf("[Market Error] MarketTransfer: Invalid amount %.2f\n", amount);
+        std::fflush(stdout);
+        _log(ACCOUNT__ERROR, "MarketTransfer: Invalid amount %.2f", amount);
+        return false;
+    }
+
+    double fromBalance = GetBalance(fromID, fromAccountKey);
+    if (fromBalance < amount) {
+        std::printf("[Market Error] MarketTransfer: Insufficient funds: %.2f available, %.2f required\n", fromBalance, amount);
+        std::fflush(stdout);
+        _log(ACCOUNT__ERROR, "MarketTransfer: Insufficient funds: %.2f available, %.2f required", fromBalance, amount);
+        return false;
+    }
+
+    if (!AlterBalance(fromID, -amount, fromAccountKey)) {
+        std::printf("[Market Error] MarketTransfer: Failed to deduct %.2f from %u\n", amount, fromID);
+        std::fflush(stdout);
+        _log(ACCOUNT__ERROR, "MarketTransfer: Failed to deduct %.2f from %u", amount, fromID);
+        return false;
+    }
+
+    if (!AlterBalance(toID, amount, toAccountKey)) {
+        AlterBalance(fromID, amount, fromAccountKey);  // rollback
+        std::printf("[Market Error] MarketTransfer: Failed to credit %.2f to %u, rolled back deduction\n", amount, toID);
+        std::fflush(stdout);
+        _log(ACCOUNT__ERROR, "MarketTransfer: Failed to credit %.2f to %u, rolled back deduction", amount, toID);
+        return false;
+    }
+
+    RecordTransaction(fromID, toID, amount, reason, entryType, refID, fromAccountKey, toAccountKey);
+    return true;
+}
+
 void AccountService::TransferFunds(
     uint32 fromID,
     uint32 toID,

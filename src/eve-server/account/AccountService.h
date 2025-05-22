@@ -62,6 +62,18 @@ public:
         uint32 referenceID = 0
     );
 
+    // ---marketorder update
+    static bool TransferFunds(
+    uint32 fromID,
+    uint32 toID,
+    double amount,
+    const char* reason,
+    uint8 entryType,
+    uint32 refID,
+    uint16 fromAccountKey = Account::KeyType::Cash,
+    uint16 toAccountKey = Account::KeyType::Cash
+);
+
 protected:
     AccountDB m_db;
 
