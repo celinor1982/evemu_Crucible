@@ -63,16 +63,16 @@ public:
     );
 
     // ---marketorder update
-    static bool TransferFunds(
-    uint32 fromID,
-    uint32 toID,
-    double amount,
-    const char* reason,
-    uint8 entryType,
-    uint32 refID,
-    uint16 fromAccountKey = Account::KeyType::Cash,
-    uint16 toAccountKey = Account::KeyType::Cash
-);
+    static bool MarketTransfer(
+        uint32 fromID,
+        uint32 toID,
+        double amount,
+        const char* reason,
+        uint8 entryType,
+        uint32 refID,
+        uint16 fromAccountKey = Account::KeyType::Cash,
+        uint16 toAccountKey = Account::KeyType::Cash
+    );
 
 protected:
     AccountDB m_db;
