@@ -315,7 +315,7 @@ bool AccountService::MarketTransfer(
         return false;
     }
 
-    double fromBalance = GetBalance(fromID, fromAccountKey);
+    double fromBalance = AccountDB::GetBalance(fromID, fromAccountKey);
     if (fromBalance < amount) {
         std::printf("[Market Error] MarketTransfer: Insufficient funds: %.2f available, %.2f required\n", fromBalance, amount);
         std::fflush(stdout);
