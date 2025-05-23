@@ -321,14 +321,14 @@ bool AccountService::MarketTransfer(
         return false;
     }
 
-    if (!AlterBalance(fromID, -amount, fromAccountKey)) {
+    if (!AccountDB::AlterBalance(fromID, -amount, fromAccountKey)) {
         std::printf("[Market Error] MarketTransfer: Failed to deduct %.2f from %u\n", amount, fromID);
         std::fflush(stdout);
         _log(ACCOUNT__ERROR, "MarketTransfer: Failed to deduct %.2f from %u", amount, fromID);
         return false;
     }
 
-    if (!AlterBalance(toID, amount, toAccountKey)) {
+    if (!AccountDB::AlterBalance(toID, amount, toAccountKey)) {
         AlterBalance(fromID, amount, fromAccountKey);  // rollback
         std::printf("[Market Error] MarketTransfer: Failed to credit %.2f to %u, rolled back deduction\n", amount, toID);
         std::fflush(stdout);
@@ -336,7 +336,7 @@ bool AccountService::MarketTransfer(
         return false;
     }
 
-    RecordTransaction(fromID, toID, amount, reason, entryType, refID, fromAccountKey, toAccountKey);
+    AccountDB::RecordTransaction(fromID, toID, amount, reason, entryType, refID, fromAccountKey, toAccountKey);
     return true;
 }
 
