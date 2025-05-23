@@ -72,6 +72,9 @@ static const float TURN_ALIGNMENT = 4.0f;
 static const float WARP_ALIGNMENT = 6.0f;
 static const uint16 BUMP_DISTANCE = 50;     //in meters.  < this = hit.
 
+// ---warpbouncefix
+uint64 m_ignoreBumpUntil = 0;
+
 /*
 namespace Destiny {
     namespace Warp {
@@ -346,6 +349,8 @@ private:
     void WarpDecel(uint16 sec_into_warp);
     void WarpStop(double currentShipSpeed);
     void WarpUpdate(double currentShipSpeed);
+
+    bool m_skipNextBumpCheck = false; // ---warpbouncefix
 
     // Variables used during Warp.
     class WarpState {

@@ -594,6 +594,10 @@ void DestinyManager::CheckBump()
 {
     double profileStartTime(GetTimeUSeconds());
 
+    // Skip bump checks if within immunity window (e.g., post warp-to-0m or bookmark warp)
+    if (GetTimeMS() < m_ignoreBumpUntil) // ---warpbouncefix
+        return;
+
     //  collision detection code here
     /*  in this case, we are ONLY interested in objects
      *   that have drifted within each others radius (for whatever reason)
@@ -609,11 +613,14 @@ void DestinyManager::CheckBump()
     Client* pClient = mySE->GetPilot();
     GPoint pos(GetPosition());
     float distance = 0.0f;
+
     for (auto cur : vPlayers) {
         if (cur == pClient)
             continue;
+
         distance = pos.distance(cur->GetShipSE()->GetPosition());
         distance -= (mySE->GetRadius() - cur->GetShipSE()->GetRadius());
+
         if (distance < BUMP_DISTANCE) {
             Bump(cur->GetShipSE());
             m_bump = true;
@@ -2145,6 +2152,11 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     }
 
     m_ballMode = Destiny::Ball::Mode::WARP;
+
+    // ---warpbouncefix; set bump immunity if this was a warp-to-0m or other close warp
+    if (m_stopDistance == 0) {
+        m_ignoreBumpUntil = GetTimeMS() + 3000;  // 3 seconds of immunity from bump
+    }
 
     // send client updates
     std::vector<PyTuple*> updates;
