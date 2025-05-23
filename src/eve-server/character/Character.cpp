@@ -372,13 +372,9 @@ float Character::balance(uint8 type)
     return 0.0f;
 }
 
-bool Character::AlterBalance(double amount, uint8 type) {                                   // ---sellorder update
-    if (std::abs(amount) < 0.00001) {
-        std::printf("[Market Trace] AlterBalance skipped: amount too small (%.6f ISK)\n", amount);
-        std::fflush(stdout);
-        _log(MARKET__TRACE, "AlterBalance skipped: amount too small (%.6f ISK)", amount);   // ---sellorder update
+bool Character::AlterBalance(float amount, uint8 type) {
+    if (amount == 0)
         return true;
-    }
 
     // amount can be negative.  check for funds to remove, if applicable
     if ((balance(type) + amount) < 0) {
