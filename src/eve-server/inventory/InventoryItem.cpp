@@ -154,8 +154,8 @@ InventoryItemRef InventoryItem::SpawnItem(uint32 itemID, const ItemData &data)
     InventoryItemRef iRef = InventoryItemRef(new InventoryItem(itemID, *iType, data));
     if (iRef.get() != nullptr)
         iRef->_Load();
-    if (iRef.get() != nullptr && iRef->GetMyInventory() == nullptr)
-        iRef->pInventory = new Inventory(iRef);
+    if (iRef.get() != nullptr && iRef->GetMyInventory() == nullptr) // ---inventory updates; prevents null reference issues
+        iRef->pInventory = new Inventory(iRef); // ---inventory updates
 
     return iRef;
 }
@@ -394,14 +394,14 @@ InventoryItemRef InventoryItem::SpawnTemp(ItemData& data)
 
     if (iType->groupID() == EVEDB::invGroups::Cargo_Container)
         return CargoContainer::SpawnTemp(data);
-
+    // ---inventory updates; prevents null reference issues
     InventoryItemRef itemRef = InventoryItem::SpawnItem(InventoryItem::CreateTempItemID(data), data);
     if (itemRef.get() == nullptr)
         return InventoryItemRef(nullptr);
     if (itemRef->GetMyInventory() == nullptr)
         itemRef->pInventory = new Inventory(itemRef);
     return itemRef;
-
+    // ---
 }
 
 // called from generic SpawnItem()
@@ -437,12 +437,12 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             _log(ITEM__WARNING, "II::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID(data);
-            InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
+            InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data); // ---inventory updates; prevents null reference issues
             if (itemRef.get() == nullptr)
                 return InventoryItemRef(nullptr);
             if (itemRef->GetMyInventory() == nullptr)
                 itemRef->pInventory = new Inventory(itemRef);
-            return itemRef;
+            return itemRef; // ---
         } break;
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure:
@@ -470,12 +470,12 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
                 case EVEDB::invGroups::Control_Bunker:
                 case EVEDB::invGroups::Capture_Point: {
                     uint32 itemID = InventoryItem::CreateItemID(data);
-                    InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
+                    InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data); // ---inventory updates; prevents null reference issues
                     if (itemRef.get() == nullptr)
                         return InventoryItemRef(nullptr);
                     if (itemRef->GetMyInventory() == nullptr)
                         itemRef->pInventory = new Inventory(itemRef);
-                    return itemRef;
+                    return itemRef; // ---
                 } break;
                 case EVEDB::invGroups::Sentry_Gun:      // these are not saved
                 case EVEDB::invGroups::Temporary_Cloud:
@@ -506,8 +506,8 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
             if (itemRef.get() == nullptr)
                 return InventoryItemRef(nullptr);
-            if (itemRef->GetMyInventory() == nullptr)
-                itemRef->pInventory = new Inventory(itemRef);
+            if (itemRef->GetMyInventory() == nullptr) // ---inventory updates; prevents null reference issues
+                itemRef->pInventory = new Inventory(itemRef);  // ---inventory updates
             // THESE SHOULD BE MOVED INTO A _type::Spawn() function that does not exist yet
             itemRef->SetAttribute(AttrMass,           iType->mass(), false);           // Mass
             itemRef->SetAttribute(AttrRadius,         iType->radius(), false);       // Radius
@@ -523,8 +523,8 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
                     // Spawn launched missile item in MISSILE_ID range and does NOT save missile to db
                     itemID = InventoryItem::CreateTempItemID(data);
                     itemRef = InventoryItem::SpawnItem(itemID, data);
-                    if (itemRef->GetMyInventory() == nullptr)
-                        itemRef->pInventory = new Inventory(itemRef);
+                    if (itemRef->GetMyInventory() == nullptr) // ---inventory updates; prevents null reference issues
+                        itemRef->pInventory = new Inventory(itemRef); // ---inventory updates
                 } break;
                 default: {
                     switch (iType->groupID()) {
@@ -570,10 +570,10 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             } else if (iType->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in TEMP_ENTITY_ID range and does NOT save Force_Field to db
                 uint32 itemID = InventoryItem::CreateTempItemID(data);
-                InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
+                InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data); // ---inventory updates; prevents null reference issues
                 if (itemRef->GetMyInventory() == nullptr)
                     itemRef->pInventory = new Inventory(itemRef);
-                return itemRef;
+                return itemRef; // ---inventory updates
             } else {
                 // Spawn new Celestial Object
                 return CelestialObject::Spawn(data);
@@ -637,7 +637,7 @@ void InventoryItem::ToVirtual(uint32 locationID)
     }
     if (pAttributeMap != nullptr)   // should never be null, but just in case
         pAttributeMap->Delete();
-        pAttributeMap = nullptr;
+        pAttributeMap = nullptr; // ---inventory updates; ensures pAttribueMap is fully nulled out after deletion to prvent dangling pointers
 
     //notify about the changes.
     std::map<int32, PyRep *> changes;
