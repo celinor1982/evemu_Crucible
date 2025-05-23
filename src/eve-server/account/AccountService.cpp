@@ -34,6 +34,8 @@
 #include "cache/ObjCacheService.h"
 #include "corporation/CorporationDB.h"
 
+#include "account/AccountDB.h" // ---marketorder updates
+
 /*
  * ACCOUNT__ERROR
  * ACCOUNT__WARNING
@@ -329,7 +331,7 @@ bool AccountService::MarketTransfer(
     }
 
     if (!AccountDB::AlterBalance(toID, amount, toAccountKey)) {
-        AlterBalance(fromID, amount, fromAccountKey);  // rollback
+        AccountDB::AlterBalance(fromID, amount, fromAccountKey);  // rollback
         std::printf("[Market Error] MarketTransfer: Failed to credit %.2f to %u, rolled back deduction\n", amount, toID);
         std::fflush(stdout);
         _log(ACCOUNT__ERROR, "MarketTransfer: Failed to credit %.2f to %u, rolled back deduction", amount, toID);
