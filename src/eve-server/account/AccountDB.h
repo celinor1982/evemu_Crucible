@@ -43,6 +43,11 @@ public:
     static void AddJournalEntry(uint32 ownerID, int8 entryTypeID, uint32 ownerFromID, uint32 ownerToID, int8 currency, uint16 accountKey, \
                                 double amount, double newBalance, std::string description, uint32 referenceID = 0);
 
+    // ---marketorder updates
+    static double GetBalance(uint32 charID, uint16 accountKey);
+    static bool AlterBalance(uint32 charID, double amount, uint16 accountKey);
+    static void RecordTransaction(uint32 fromID, uint32 toID, double amount, const char* reason, uint8 entryType, uint32 refID, uint16 fromAccountKey, uint16 toAccountKey);
+    // ---marketorder updates
 };
 
 
