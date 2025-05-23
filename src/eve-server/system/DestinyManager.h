@@ -33,6 +33,9 @@
 #include "destiny/DestinyStructs.h"
 #include "inventory/ItemRef.h"
 
+// ---warpbouncefix
+#include <cstdint>
+
 //0=no orbit, >0=in orbit, 1=at distance 2=too close , 3=too far, 4=way too close, 5=way too far
 namespace Destiny {
     namespace Ball {
@@ -73,7 +76,7 @@ static const float WARP_ALIGNMENT = 6.0f;
 static const uint16 BUMP_DISTANCE = 50;     //in meters.  < this = hit.
 
 // ---warpbouncefix
-uint64 m_ignoreBumpUntil = 0;
+uint64_t m_ignoreBumpUntil = 0;
 
 /*
 namespace Destiny {
