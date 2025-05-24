@@ -34,6 +34,7 @@
 #include "inventory/ItemRef.h"
 
 // ---warpbouncefix
+#include "utils/EVETime.h"
 #include <cstdint>
 
 //0=no orbit, >0=in orbit, 1=at distance 2=too close , 3=too far, 4=way too close, 5=way too far
