@@ -52,6 +52,7 @@
 
 DestinyManager::DestinyManager(SystemEntity *self)
 : mySE(self),
+m_ignoreBumpUntil(0), // ---warpbouncefix
 m_maxSpeed(1.0f),
 m_shipAccelTime(0.0f),
 m_shipMaxAccelTime(0.0f),

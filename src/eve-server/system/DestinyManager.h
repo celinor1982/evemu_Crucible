@@ -75,9 +75,6 @@ static const float TURN_ALIGNMENT = 4.0f;
 static const float WARP_ALIGNMENT = 6.0f;
 static const uint16 BUMP_DISTANCE = 50;     //in meters.  < this = hit.
 
-// ---warpbouncefix
-uint64_t m_ignoreBumpUntil = 0;
-
 /*
 namespace Destiny {
     namespace Warp {
@@ -319,6 +316,9 @@ protected:
     void UpdateVelocity(bool isMoving=false);
 
 private:
+
+    uint64_t m_ignoreBumpUntil; // ---warpbouncefix
+
     bool m_frozen;                      // hack to keep ship from moving when using modules that prevent movement
     bool m_changeDelay;                 // this is to try to sync destiny with client, as client has a delay when changing destiny states.
 
