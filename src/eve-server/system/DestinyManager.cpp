@@ -2155,7 +2155,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
 
     // ---warpbouncefix; set bump immunity if this was a warp-to-0m or other close warp
     if (m_stopDistance == 0) {
-        m_ignoreBumpUntil = GetTimeMS() + 3000;  // 3 seconds of immunity from bump
+        m_ignoreBumpUntil = GetTimeMSeconds() + 3000;  // 3 seconds of immunity from bump
     }
 
     // send client updates
