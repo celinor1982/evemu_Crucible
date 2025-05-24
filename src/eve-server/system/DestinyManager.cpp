@@ -595,7 +595,7 @@ void DestinyManager::CheckBump()
     double profileStartTime(GetTimeUSeconds());
 
     // Skip bump checks if within immunity window (e.g., post warp-to-0m or bookmark warp)
-    if (GetTimeMS() < m_ignoreBumpUntil) // ---warpbouncefix
+    if (GetTimeMSeconds() < m_ignoreBumpUntil) // ---warpbouncefix
         return;
 
     //  collision detection code here
