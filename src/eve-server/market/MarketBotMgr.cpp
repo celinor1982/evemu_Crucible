@@ -29,8 +29,39 @@ extern SystemManager* sSystemMgr;
 
 static const uint32 MARKETBOT_MAX_ITEM_ID = 30000;
 static const std::vector<uint32> VALID_GROUPS = {
-    18, 19, 20, 53, 55, 63, 70, 83, 85, 104, 108, 255
+    // Ores & Mining
+    18,                                    // Minerals
+    450, 451, 452, 453, 454, 455, 456,     // Raw ores (part 1)
+    457, 458, 459, 460, 461, 462,
+    465, 466, 467, 468, 469,              // Raw ores (part 2)
+    479,                                  // Scanner Probe
+    482,                                  // Mining Crystals
+    492,                                  // Survey Probe
+    538,                                  // Data Miners
+    548,                                  // Interdiction Probe
+    663,                                  // Mercoxit Mining Crystals
+
+    // Ammo / Charges
+    83,                                   // Projectile Ammo
+    84,                                   // Missiles
+    85,                                   // Hybrid Charges
+    86,                                   // Frequency Crystals
+    87,                                   // Cap Booster Charges
+    88,                                   // Defender Missiles
+    89,                                   // Torpedoes
+    90,                                   // Bombs
+    92,                                   // Mines
+    372, 373, 374, 375, 376, 377,         // Advanced Ammo
+    384, 385, 386, 387, 388, 389,         // Extended Missiles (part 1)
+    390, 391, 392, 393, 394, 395, 396,    // Extended Missiles (part 2)
+    648,                                  // Advanced Rocket
+    653, 654, 655, 656, 657,              // Advanced Missiles
+    772,                                  // Assault Missiles
+
+    // Boosters for Implants
+    303
 };
+
 
 static const char* const BOT_CONFIG_FILE = "/src/utils/config/MarketBot.xml";
 
@@ -263,6 +294,7 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         order.regionID = sysData.regionID;
         order.stationID = stationID;
         order.solarSystemID = systemID;
+        order.minVolume = 1;
         order.volEntered = quantity;
         order.volRemaining = quantity;
         order.price = price;
@@ -357,6 +389,7 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.regionID = sysData.regionID;
         order.stationID = stationID;
         order.solarSystemID = systemID;
+        order.minVolume = 1;
         order.volEntered = quantity;
         order.volRemaining = quantity;
         order.price = price;
@@ -436,12 +469,38 @@ uint32 MarketBotMgr::SelectRandomItemID() {
 }
 
 uint32 MarketBotMgr::GetRandomQuantity(uint32 groupID) {
-    if (groupID == 18 || groupID == 20 || groupID == 53 || groupID == 104) {
-        return GetRandomInt(1000, 1000000);
+    // Large-quantity bulk groups: minerals, ammo, ores, charges, etc.
+    if (
+        groupID == 18 ||                      // Minerals
+        (groupID >= 83 && groupID <= 92) ||   // Basic ammo/charges
+        (groupID >= 372 && groupID <= 377) || // Advanced ammo
+        (groupID >= 384 && groupID <= 396) || // More missiles
+        groupID == 479 ||                     // Scanner Probes
+        groupID == 482 ||                     // Mining Crystals
+        groupID == 492 ||                     // Survey Probes
+        groupID == 538 ||                     // Data Miners
+        groupID == 548 ||                     // Interdiction Probe
+        groupID == 648 ||                     // Advanced Rocket
+        (groupID >= 653 && groupID <= 657) || // Advanced Missiles
+        groupID == 663 ||                     // Mercoxit Mining Crystals
+        groupID == 772 ||                     // Assault Missiles
+        (groupID >= 450 && groupID <= 462) || // Raw ores (part 1)
+        (groupID >= 465 && groupID <= 469)    // Raw ores (part 2)
+    ) {
+        return GetRandomInt(1000, 1000000);  // Large stack sizes
     }
-    if (groupID == 55 || groupID == 63 || groupID == 70) {
+
+    // Medium-volume: modules, rigs, etc.; way to many to list... disabled for the time being
+    // leaving below as an example.
+    /*if (
+        groupID == 62 ||  // Armor Repairers
+        groupID == 63 ||  // Hull Repair
+        groupID == 205    // Heat Sink
+    ) {
         return GetRandomInt(10, 100);
-    }
+    }*/
+
+    // Fallback for anything else
     return GetRandomInt(1, 5);
 }
 
