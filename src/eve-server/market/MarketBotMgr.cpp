@@ -256,6 +256,8 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
             }
         }
 
+        double escrow = price * quantity;
+
         Market::SaveData order;
         order.typeID = itemID;
         order.regionID = sysData.regionID;
