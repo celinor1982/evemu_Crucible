@@ -29,6 +29,7 @@
 #include "testing/test.h"
 #include "admin/CommandDispatcher.h" // ---commandlist update
 #include "EVE_Roles.h" // ---commandlist update
+#include "market/MarketBotMgr.h" // ---marketbot update
 
 // ---comandlist update; helper function to convert role strings into names
 struct RoleDisplayInfo {
