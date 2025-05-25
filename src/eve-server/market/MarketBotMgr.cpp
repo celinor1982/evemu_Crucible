@@ -76,7 +76,7 @@ int MarketBotMgr::Initialize() {
     // START automation timer immediately
     /*uint32_t delay_ms = sMBotConf.main.DataRefreshTime * 60 * 1000;*/
     m_updateTimer.Disable();
-    m_updateTimer.Start(0); // () set to delay_ms
+    m_updateTimer.Start(0); // starts timer for marketbot
 
     std::printf("[MarketBot] Initialized — automation will trigger on next tick (Start(0) used)\n");
     std::fflush(stdout);
@@ -86,28 +86,6 @@ int MarketBotMgr::Initialize() {
 
     sLog.Blue("     MarketBotMgr", "Market Bot Manager Initialized.");
     return 1;
-}
-
-void MarketBotMgr::ForceRun() {
-    std::printf("[MarketBot] ForceRun entered\n");
-    std::fflush(stdout);
-
-    if (!m_initalized) {
-        std::printf("[MarketBot] MarketBotMgr not initialized — skipping run\n");
-        std::fflush(stdout);
-        return;
-    }
-
-    std::printf("[MarketBot] Running Process() now...\n");
-    std::fflush(stdout);
-
-    this->Process(true);  // force override
-
-    std::printf("[MarketBot] Finished Process()\n");
-    std::fflush(stdout);
-
-    // Reset the timer for the next normal cycle
-    m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
 }
 
 // Called on minute tick from EntityList
@@ -169,6 +147,28 @@ void MarketBotMgr::Process(bool overrideTimer) {
     std::printf("[MarketBot] Cycle complete. Resetting timer.\n");
     std::fflush(stdout);
     _log(MARKET__TRACE, "MarketBot cycle complete. Resetting timer.");
+    m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
+}
+
+void MarketBotMgr::ForceRun() {
+    std::printf("[MarketBot] ForceRun entered\n");
+    std::fflush(stdout);
+
+    if (!m_initalized) {
+        std::printf("[MarketBot] MarketBotMgr not initialized — skipping run\n");
+        std::fflush(stdout);
+        return;
+    }
+
+    std::printf("[MarketBot] Running Process() now...\n");
+    std::fflush(stdout);
+
+    this->Process(true);  // force override
+
+    std::printf("[MarketBot] Finished Process()\n");
+    std::fflush(stdout);
+
+    // Reset the timer for the next normal cycle
     m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
 }
 
