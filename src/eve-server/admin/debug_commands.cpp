@@ -1257,6 +1257,13 @@ PyResult Command_dropLoot(Client* pClient, CommandDB* db, EVEServiceManager &ser
     return nullptr;
 }
 
+// ---marketbot update; forcerun command
+PyResult Command_marketbot_run(Client* pClient, CommandDB* db, EVEServiceManager& services, const Seperator& args) {
+    sMktBotMgr.ForceRun();
+    pClient->SendNotifyMsg("MarketBot has been forced to refresh orders.");
+    return new PyString("MarketBot refresh cycle triggered.");
+}
+
 /* groove's new command.....
  *    /fit [me|itemID] [typeID] [flag=slot]
  * then sends ScatterEvent OnRefreshModuleBanks after successful call.

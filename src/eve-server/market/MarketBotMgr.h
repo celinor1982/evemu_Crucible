@@ -1,4 +1,3 @@
-
  /**
   * @name MarketBotMgr.h
   *   system for automating/emulating buy and sell orders on the market.
@@ -8,18 +7,14 @@
   * @version:  0.15 (config version)
   */
 
-
 #ifndef EVEMU_MARKET_MARKETBOTMGR_H_
 #define EVEMU_MARKET_MARKETBOTMGR_H_
-
 
 #include "eve-compat.h"
 #include "eve-common.h"
 #include "utils/Singleton.h"
 
-class MarketBotDataMgr
-: public Singleton<MarketBotDataMgr>
-{
+class MarketBotDataMgr : public Singleton<MarketBotDataMgr> {
 public:
     MarketBotDataMgr();
     ~MarketBotDataMgr() { /* do nothing here */ }
@@ -31,13 +26,9 @@ private:
 };
 
 //Singleton
-#define sMktBotDataMgr \
-( MarketBotDataMgr::get() )
+#define sMktBotDataMgr (MarketBotDataMgr::get())
 
-
-class MarketBotMgr
-: public Singleton<MarketBotMgr>
-{
+class MarketBotMgr : public Singleton<MarketBotMgr> {
 public:
     MarketBotMgr();
     ~MarketBotMgr() { /* do nothing here */ }
@@ -48,14 +39,26 @@ public:
     void AddSystem();
     void RemoveSystem();
 
+    void ForceRun();  // ---marketbot update for GM/admin manual triggering of MarketBot
+
+    // ---marketbot update
+    void PlaceBuyOrders(uint32 systemID);
+    void PlaceSellOrders(uint32 systemID);
+    void ExpireOldOrders();
+
+    std::vector<uint32> GetEligibleSystems();
+    uint32 SelectRandomItemID();
+    uint32 GetRandomQuantity(uint32 groupID);
+    double CalculateBuyPrice(uint32 itemID);
+    double CalculateSellPrice(uint32 itemID);
+    // ---marketbot update
+
 private:
     Timer m_updateTimer;
-
     bool m_initalized;
 };
 
 //Singleton
-#define sMktBotMgr \
-( MarketBotMgr::get() )
+#define sMktBotMgr (MarketBotMgr::get())
 
 #endif  // EVEMU_MARKET_MARKETBOTMGR_H_
