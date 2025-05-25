@@ -585,6 +585,11 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, EVEServiceManager &se
 
     // Make sure character reference is not NULL before trying to use it:
     if (character.get()) {
+
+        // ---giveallskills fix: ensure pTarget is also valid before use
+        if (pTarget == nullptr)
+            throw CustomError("Target client is null. Aborting to prevent crash.");  // ---giveallskills fix
+
         CommandDB::charSkillStates skillList;
         // Query Database to get the list of those skills, not trained to 5 (either not injected yet or having level up to 4)
         CommandDB::NotFullyLearnedSkillList(skillList, ownerID);
@@ -606,8 +611,9 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, EVEServiceManager &se
                 ItemData idata(skillID, ownerID, pTarget->GetLocationID(), flagSkill, 1, str.str().c_str());
                 skill = sItemFactory.SpawnSkill(idata);
 
-                if (skill.get() == nullptr)
-                    throw CustomError ("Unable to create item of type %s.", skill->typeID());
+                // ---giveallskills fix: check skill spawn success before usage
+                if (!skill)
+                    throw CustomError("Unable to create skill item (typeID %u) for character %u.", skillID, ownerID);  // ---giveallskills fix
 
                 skill->SetAttribute(AttrSkillLevel, level);
                 skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
