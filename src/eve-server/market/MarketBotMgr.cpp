@@ -302,9 +302,9 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         order.duration = sMBotConf.main.OrderLifetime;
         order.bid = true;
         order.issued = GetFileTimeNow();
-        order.isCorp = true;
+        order.isCorp = false;
         order.ownerID = BOT_OWNER_ID;
-        order.orderRange = 32767; // -1 station, 0 solarsystem, 1-5 10 20 30 40 jumps, 32767 region
+        order.orderRange = 32767; // -1 station, 0 solarsystem, 1-5 10 20 30 40 jumps, 32767 region (default)
         // marketbot update; unsure if these are really needed, but aligns with how orders are created manually in-game and through seed-market.
         order.memberID = 0;       // default value for who placed the order (0 for char order)
         order.accountKey = 1000;  // default value for corp account key
@@ -400,9 +400,9 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.duration = sMBotConf.main.OrderLifetime;
         order.bid = false;
         order.issued = GetFileTimeNow();
-        order.isCorp = true;
+        order.isCorp = false;
         order.ownerID = BOT_OWNER_ID;
-        order.orderRange = -1; // -1 station, 0 solarsystem, 1-5 10 20 30 40 jumps, 32767 region
+        order.orderRange = -1; // -1 station (default), 0 solarsystem, 1-5 10 20 30 40 jumps, 32767 region
         // marketbot update; unsure if these are really needed, but aligns with how orders are created manually in-game and through seed-market.
         order.memberID = 0;       // default value for who placed the order (0 for char order)
         order.accountKey = 1000;  // default value for corp account key
@@ -437,9 +437,9 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
 }
 
 std::vector<uint32> MarketBotMgr::GetEligibleSystems() {
-    bool useStaticSystems = false;
+    bool useStaticSystems = false; // ---marketbot update; only turn to true, for testing changes with markbot or want to have it only populate orders in one system
     if (useStaticSystems) {
-        return { 30000142 };  // Jita
+        return { 30000142 };  // Jita (default system for testing)
     }
 
     std::vector<uint32> systemIDs;
