@@ -24,10 +24,7 @@
 #include "system/SystemEntity.h"
 #include <random>
 #include <cstdint>
-#include <chrono> // issue with global timers, will have to fix later; this makes marketbot timer self contained.
-
-using Clock = std::chrono::steady_clock;
-using TimePoint = std::chrono::time_point<Clock>;
+#include <chrono>
 
 extern SystemManager* sSystemMgr;
 

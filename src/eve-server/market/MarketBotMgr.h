@@ -17,6 +17,13 @@
 #include "eve-common.h"
 #include "utils/Singleton.h"
 
+// ---marketbot update; issue with global timers, will have to fix later; this makes marketbot timer self contained.
+#include <chrono>
+
+using Clock = std::chrono::steady_clock;
+using TimePoint = std::chrono::time_point<Clock>;
+// ---marketbot update
+
 class MarketBotDataMgr
 : public Singleton<MarketBotDataMgr>
 {
