@@ -24,6 +24,10 @@
 #include "system/SystemEntity.h"
 #include <random>
 #include <cstdint>
+#include <chrono> // issue with global timers, will have to fix later; this makes marketbot timer self contained.
+
+using Clock = std::chrono::steady_clock;
+using TimePoint = std::chrono::time_point<Clock>;
 
 extern SystemManager* sSystemMgr;
 
@@ -61,7 +65,6 @@ static const std::vector<uint32> VALID_GROUPS = {
     // Boosters for Implants
     303
 };
-
 
 static const char* const BOT_CONFIG_FILE = "/src/utils/config/MarketBot.xml";
 
@@ -103,17 +106,9 @@ int MarketBotMgr::Initialize() {
 
     m_initalized = true;
     sMktBotDataMgr.Initialize();
+    m_nextRunTime = Clock::now();  // immediate run on first tick
 
-    // START automation timer immediately
-    /*uint32_t delay_ms = sMBotConf.main.DataRefreshTime * 60 * 1000;*/
-    m_updateTimer.Disable();
-    m_updateTimer.Start(0); // starts timer for marketbot
-
-    std::printf("[MarketBot] Initialized — automation will trigger on next tick (Start(0) used)\n");
-    std::fflush(stdout);
-
-    /*std::printf("[MarketBot] Initialized with timer set to %u ms (%d min)\n", delay_ms, sMBotConf.main.DataRefreshTime);
-    std::fflush(stdout);*/
+    sLog.Cyan("     MarketBot Initialized — automation will trigger on next tick.");
 
     sLog.Blue("     MarketBotMgr", "Market Bot Manager Initialized.");
     return 1;
@@ -121,11 +116,11 @@ int MarketBotMgr::Initialize() {
 
 // Called on minute tick from EntityList
 void MarketBotMgr::Process(bool overrideTimer) {
-    bool timerReady = m_updateTimer.Check();
+    TimePoint now = Clock::now();
 
-    std::printf("[MarketBot] MarketBot Process() invoked on tick. Timer ready = %s\n", m_updateTimer.Check() ? "true" : "false");
+    std::printf("[MarketBot] MarketBot Process() invoked on tick.\n");
     std::fflush(stdout);
-    _log(MARKET__TRACE, "MarketBot Process() invoked on tick. Timer ready = %s", m_updateTimer.Check() ? "true" : "false");
+    _log(MARKET__TRACE, "MarketBot Process() invoked on tick.");
 
     std::printf("[MarketBot] Entered MarketBotMgr::Process()\n");
     std::fflush(stdout);
@@ -138,7 +133,7 @@ void MarketBotMgr::Process(bool overrideTimer) {
         return;
     }
 
-    if (!overrideTimer && !m_updateTimer.Check()) {
+    if (!overrideTimer && now < m_nextRunTime) {
         std::printf("[MarketBot] Update timer not ready yet.\n");
         std::fflush(stdout);
         _log(MARKET__TRACE, "Update timer not ready yet.");
@@ -178,7 +173,9 @@ void MarketBotMgr::Process(bool overrideTimer) {
     std::printf("[MarketBot] Cycle complete. Resetting timer.\n");
     std::fflush(stdout);
     _log(MARKET__TRACE, "MarketBot cycle complete. Resetting timer.");
-    m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
+    m_nextRunTime = Clock::now() + std::chrono::minutes(sMBotConf.main.DataRefreshTime);
+    std::printf("[MarketBot] Timer reset. Next run in %d minutes.\n", sMBotConf.main.DataRefreshTime);
+    std::fflush(stdout);
 }
 
 void MarketBotMgr::ForceRun() {
@@ -198,9 +195,9 @@ void MarketBotMgr::ForceRun() {
 
     std::printf("[MarketBot] Finished Process()\n");
     std::fflush(stdout);
-
-    // Reset the timer for the next normal cycle
-    m_updateTimer.Start(sMBotConf.main.DataRefreshTime * 60 * 1000);
+    
+    m_nextRunTime = Clock::now() + std::chrono::minutes(sMBotConf.main.DataRefreshTime);
+    std::printf("[MarketBot] Timer reset. Next run in %d minutes.\n", sMBotConf.main.DataRefreshTime);
 }
 
 void MarketBotMgr::AddSystem() { /* To be implemented if needed */ }

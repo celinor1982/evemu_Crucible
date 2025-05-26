@@ -186,8 +186,6 @@ void EntityList::RemovePlayer(Client* pClient)
 
 
 void EntityList::Process() {
-    Timer::SetCurrentTime();  // ---mraketbot update; make sure timers are called and advance
-
     Client* pClient(nullptr);
     std::vector<Client*>::iterator citr = m_clients.begin();
     while (citr != m_clients.end()) {
