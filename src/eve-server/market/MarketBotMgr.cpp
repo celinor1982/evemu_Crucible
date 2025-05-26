@@ -305,6 +305,9 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
         order.isCorp = true;
         order.ownerID = BOT_OWNER_ID;
         order.orderRange = 32767; // -1 station, 0 solarsystem, 1-5 10 20 30 40 jumps, 32767 region
+        // marketbot update; unsure if these are really needed, but aligns with how orders are created manually in-game and through seed-market.
+        order.memberID = 0;       // default value for who placed the order (0 for char order)
+        order.accountKey = 1000;  // default value for corp account key
 
         bool success = MarketDB::StoreOrder(order);
         if (success) {
@@ -393,12 +396,16 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
         order.volEntered = quantity;
         order.volRemaining = quantity;
         order.price = price;
+        /* order.escrow = escrow; */ // not required for sell orders; place here for possible future use.
         order.duration = sMBotConf.main.OrderLifetime;
         order.bid = false;
         order.issued = GetFileTimeNow();
         order.isCorp = true;
         order.ownerID = BOT_OWNER_ID;
         order.orderRange = -1; // -1 station, 0 solarsystem, 1-5 10 20 30 40 jumps, 32767 region
+        // marketbot update; unsure if these are really needed, but aligns with how orders are created manually in-game and through seed-market.
+        order.memberID = 0;       // default value for who placed the order (0 for char order)
+        order.accountKey = 1000;  // default value for corp account key
 
         std::printf("[MarketBot] System %u maps to region %u via GetSystemData.\n", systemID, sysData.regionID);
         std::fflush(stdout);
