@@ -105,7 +105,7 @@ int MarketBotMgr::Initialize() {
     sMktBotDataMgr.Initialize();
     m_nextRunTime = Clock::now();  // immediate run on first tick
 
-    sLog.Cyan("     MarketBot Initialized — automation will trigger on next tick.");
+    sLog.Cyan("     MarketBotMgr", "Initialized — automation will trigger on next tick.");
 
     sLog.Blue("     MarketBotMgr", "Market Bot Manager Initialized.");
     return 1;
