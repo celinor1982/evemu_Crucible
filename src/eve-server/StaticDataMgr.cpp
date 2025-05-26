@@ -92,8 +92,7 @@ int StaticDataMgr::Initialize()
 {
     Populate();
     // ---marketbot changes
-    std::printf("[StaticDataMgr] Loaded %zu solar systems into m_systemData\n", m_systemData.size());
-    std::fflush(stdout);
+    sLog.Cyan("    StaticDataMgr", "Loaded %zu solar systems into m_systemData.", m_systemData.size());
     // ---
     sLog.Blue("    StaticDataMgr", "Static Data Manager Initialized.");
     return 1;
