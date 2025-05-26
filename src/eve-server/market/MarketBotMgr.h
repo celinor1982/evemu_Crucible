@@ -12,17 +12,17 @@
 #ifndef EVEMU_MARKET_MARKETBOTMGR_H_
 #define EVEMU_MARKET_MARKETBOTMGR_H_
 
-
-#include "eve-compat.h"
-#include "eve-common.h"
-#include "utils/Singleton.h"
-
+// ---marketbot update; this has to be declared first.
 // ---marketbot update; issue with global timers, will have to fix later; this makes marketbot timer self contained.
 #include <chrono>
 
 using Clock = std::chrono::steady_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 // ---marketbot update
+
+#include "eve-compat.h"
+#include "eve-common.h"
+#include "utils/Singleton.h"
 
 class MarketBotDataMgr
 : public Singleton<MarketBotDataMgr>
