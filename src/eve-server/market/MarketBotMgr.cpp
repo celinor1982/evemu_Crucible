@@ -126,10 +126,10 @@ void MarketBotMgr::Process(bool overrideTimer) {
         return;
     }
 
-    if (!overrideTimer) {
-        if (now < m_nextRunTime) {
-            auto timeLeft = std::chrono::duration_cast<std::chrono::seconds>(m_nextRunTime - now).count();
-            sLog.Green("     Trader Joe", "Update timer not ready yet. Next run in %lld seconds.", timeLeft);
+    if (!overrideTimer && now < m_nextRunTime) {
+        auto timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(m_nextRunTime - now).count();
+        if (timeLeft > 0) {
+            sLog.Green("     Trader Joe", "Update timer not ready yet. Next run in %lld seconds.", timeLeft / 1000);
             _log(MARKET__TRACE, "Trader Joe waiting — next run in %lld seconds.", timeLeft);
             return;
         }
@@ -196,8 +196,11 @@ int MarketBotMgr::ExpireOldOrders() {
 
     int expiredCount = 0;
 
+    sLog.Yellow("     Trader Joe", "ExpireOldOrders: now = %" PRIu64, now);
+    _log(MARKET__TRACE, "ExpireOldOrders: now = %" PRIu64, now);
+
     if (!sDatabase.RunQuery(res,
-        "SELECT orderID FROM mktOrders WHERE issued + (duration * 86400000000) < %" PRIu64 " AND ownerID = %u",
+        "SELECT orderID FROM mktOrders WHERE (issued + CAST(duration AS UNSIGNED) * 86400000000) < CAST(%" PRIu64 " AS UNSIGNED) AND ownerID = %u",
         now, BOT_OWNER_ID)) {
         _log(MARKET__DB_ERROR, "Failed to query expired bot orders.");
         return 0;
