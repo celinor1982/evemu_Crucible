@@ -90,7 +90,7 @@ int MarketBotDataMgr::Initialize() {
     return 1;
 }
 
-MarketBotMgr::MarketBotMgr()
+MarketBotMgr::MarketBotMgr() {
     m_initalized = false;
 }
 
@@ -168,7 +168,7 @@ void MarketBotMgr::Process(bool overrideTimer) {
     sLog.Green("     Trader Joe", "Timer reset. Next run in %d minutes.", sMBotConf.main.DataRefreshTime);
 }
 
-void MarketBotMgr::ForceRun() {
+void MarketBotMgr::ForceRun(bool resetTimer) {
     sLog.Warning("     ForceRun", "Manually starting Trader Joe.");
 
     if (!m_initalized) {
