@@ -102,10 +102,9 @@ int MarketBotMgr::Initialize() {
 
     m_initalized = true;
     sMktBotDataMgr.Initialize();
-    m_nextRunTime = Clock::now();  // immediate run on first tick
-    this->ForceRun(false);  // Don't reset timer; already set to now
 
-    sLog.Cyan("     MarketBotMgr", "Initialized — automation will trigger on next tick.");
+    m_nextRunTime = Clock::now() + std::chrono::minutes(sMBotConf.main.DataRefreshTime);
+    sLog.Cyan("     MarketBotMgr", "Timer initialized. First automated cycle will run in %d minutes.", sMBotConf.main.DataRefreshTime);
 
     sLog.Blue("     MarketBotMgr", "Market Bot Manager Initialized.");
     return 1;
@@ -115,14 +114,14 @@ int MarketBotMgr::Initialize() {
 void MarketBotMgr::Process(bool overrideTimer) {
     TimePoint now = Clock::now();
 
-    sLog.Green("     Market Bot Mgr", "MarketBot Process() invoked on tick.");
+    sLog.Green("     MarketBotMgr", "MarketBot Process() invoked on tick.");
     _log(MARKET__TRACE, "MarketBot Process() invoked on tick.");
 
-    sLog.Green("     Market Bot Mgr", "Entered MarketBotMgr::Process()\n");
+    sLog.Green("     MarketBotMgr", "Entered MarketBotMgr::Process()\n");
     _log(MARKET__TRACE, ">> Entered MarketBotMgr::Process()");
 
     if (!m_initalized) {
-        sLog.Error("     Market Bot Mgr", "MarketBotMgr not initialized — skipping run\n");
+        sLog.Error("     MarketBotMgr", "MarketBotMgr not initialized — skipping run\n");
         _log(MARKET__ERROR, "Process() called but MarketBotMgr is not initialized.");
         return;
     }
