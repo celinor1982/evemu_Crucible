@@ -202,7 +202,7 @@ int MarketBotMgr::ExpireOldOrders() {
     _log(MARKET__TRACE, "ExpireOldOrders: now = %" PRIu64, now);
 
     if (!sDatabase.RunQuery(res,
-        "SELECT orderID FROM mktOrders WHERE (issued + CAST(duration AS UNSIGNED) * %" PRIu64 ") < CAST(%" PRIu64 " AS UNSIGNED) AND ownerID = %u",
+        "SELECT orderID FROM mktOrders WHERE (issued + CAST(duration AS UNSIGNED) * %" PRIu64 ") < CAST(%" PRIu64 " AS UNSIGNED) AND ownerID = %u AND volEntered != 550",
         FILETIME_TICKS_PER_DAY, now, BOT_OWNER_ID)) {
         _log(MARKET__DB_ERROR, "Failed to query expired bot orders.");
         return 0;
@@ -443,7 +443,7 @@ uint32 MarketBotMgr::GetRandomQuantity(uint32 groupID) {
     }*/
 
     // Fallback for anything else
-    return GetRandomInt(1, 5);
+    return GetRandomInt(10, 500);
 }
 
 double MarketBotMgr::CalculateBuyPrice(uint32 itemID) {
