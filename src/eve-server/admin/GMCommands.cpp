@@ -560,11 +560,8 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, EVEServiceManager &se
         if (args.isNumber(1)) {
             ownerID = atoi(args.arg(1).c_str());
             pTarget = sEntityList.FindClientByCharID(ownerID);
-            if (!pTarget) {
-                printf("[Command] ERROR: Cannot find character #%d\n", ownerID);
-                fflush(stdout);
+            if (!pTarget)
                 throw CustomError ("ERROR: Cannot find character #%d", ownerID);
-            }
             else
                 character = pTarget->GetChar();
         } else if (args.arg(1) == "me") {
@@ -572,8 +569,6 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, EVEServiceManager &se
             character = who->GetChar();
             pTarget = who;
         } else if (!args.isNumber(1)) {
-            printf("[Command] ERROR: String-based names not supported. Use 'me' or entity ID.\n");
-            fflush(stdout);
             throw CustomError ("The use of string based Character names for this command is not yet supported!  Use 'me' instead or the entityID of the character to which you wish to give skills.");
             /*
              *            const char *name = args.arg(1).c_str();
@@ -583,63 +578,27 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, EVEServiceManager &se
              *            ownerID = target->GetCharacterID();
              *            character = target->GetChar();
              */
-        } else {
-            printf("[Command] ERROR: Argument 1 must be Character ID or Name\n");
-            fflush(stdout);
+        } else
             throw CustomError ("Argument 1 must be Character ID or Character Name ");
-        }
-    } else {
-        printf("[Command] ERROR: Correct Usage: /giveallskills [Character Name or ID]\n");
-        fflush(stdout);
+    } else
         throw CustomError ("Correct Usage: /giveallskills [Character Name or ID]");
-    }
 
     // Make sure character reference is not NULL before trying to use it:
     if (character.get()) {
-
-        // ---giveallskills fix: ensure pTarget is also valid before use
-        if (pTarget == nullptr) {
-            printf("[Command] ERROR: Target client is null. Aborting to prevent crash.\n");
-            fflush(stdout);
-            throw CustomError("Target client is null. Aborting to prevent crash.");  // ---giveallskills fix
-        }
-
         CommandDB::charSkillStates skillList;
         // Query Database to get the list of those skills, not trained to 5 (either not injected yet or having level up to 4)
-        printf("Checkpoint A: About to query NotFullyLearnedSkillList\n"); fflush(stdout);
         CommandDB::NotFullyLearnedSkillList(skillList, ownerID);
-        printf("Checkpoint B: Completed skill list query. %lu skills returned.\n", skillList.size()); fflush(stdout);
 
         SkillRef skill;
         uint16 skillID;
 
-        printf("Checkpoint C: About to enter skill loop\n"); fflush(stdout);
         for (auto cur: skillList) {
-            printf("Checkpoint D: Processing skillID %u\n", cur.first); fflush(stdout);
             skillID = cur.first;
             if (cur.second >= 0) {  // the same check as character->HasSkill(skillID)
                 skill = character->GetCharSkillRef(skillID);
-
-                // ---giveallskills fix: handle active training safely
-                Skill* trainingSkill = character->GetSkillInTraining();
-                if (trainingSkill != nullptr && trainingSkill->typeID() == skillID) {
-                    printf("Skill %u is currently being trained. Pausing.\n", skillID); fflush(stdout);
-                    character->PauseSkillQueue();  // ---giveallskills fix: safely pause training
-                    printf("Skill %u training paused.\n", skillID); fflush(stdout);
-
-                    throw CustomError("Skill %u was training and has been paused.", skillID);
-                } else {
-                    printf("Calling RemoveFromQueue for skill %u\n", skillID); fflush(stdout);
-                    character->RemoveFromQueue(skill);  // ---giveallskills fix
-                    printf("Returned from RemoveFromQueue for skill %u\n", skillID); fflush(stdout);
-                    //printf("Removed skill %u from queue if it existed.\n", skillID); fflush(stdout);
-                    //printf("Skipping RemoveFromQueue for now.\n"); fflush(stdout);
-                }
-
-                // Now apply level/SP update
                 skill->SetAttribute(AttrSkillLevel, level);
                 skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
-                printf("Updated skill %u to level %u.\n", skillID, level); fflush(stdout);
+                character->RemoveFromQueue(skill);
             } else {
                 std::ostringstream str;
                 str << "Skill Gift by ";
@@ -647,12 +606,8 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, EVEServiceManager &se
                 ItemData idata(skillID, ownerID, pTarget->GetLocationID(), flagSkill, 1, str.str().c_str());
                 skill = sItemFactory.SpawnSkill(idata);
 
-                // ---giveallskills fix: check skill spawn success before usage
-                if (!skill) {
-                    printf("[Command] ERROR: Unable to create skill item (typeID %u) for character %u.\n", skillID, ownerID);
-                    fflush(stdout);
-                    throw CustomError("Unable to create skill item (typeID %u) for character %u.", skillID, ownerID);  // ---giveallskills fix
-                }
+                if (skill.get() == nullptr)
+                    throw CustomError ("Unable to create item of type %s.", skill->typeID());
 
                 skill->SetAttribute(AttrSkillLevel, level);
                 skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
@@ -667,13 +622,11 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, EVEServiceManager &se
             oasc.newSP = skill->GetSPForLevel(level);
             PyTuple* tmp = oasc.Encode();
             pTarget->QueueDestinyEvent(&tmp);
-            printf("Queued destiny event for skill %u\n", skillID); fflush(stdout);
 
             //  save gm skill gift in history  -allan
             //  maybe not for this....WAAAAYYY  to much DB traffic for this.
             character->SaveSkillHistory(EvESkill::Event::GMGift, Win32TimeNow(), ownerID, skillID, level, \
             skill->GetAttribute(AttrSkillPoints).get_double());
-            printf("Saved skill history for %u\n", skillID); fflush(stdout);
         }
         // END LOOP
         // pTarget->SendErrorMsg("You need to relog for skills to get saved and show in character sheet.");
