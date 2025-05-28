@@ -28,6 +28,8 @@
 
 extern SystemManager* sSystemMgr;
 
+static constexpr int64 FILETIME_TICKS_PER_DAY = 864000000000;  // 100ns ticks per day; for expelorders to be removed prematurally
+
 static const uint32 MARKETBOT_MAX_ITEM_ID = 30000;
 static const std::vector<uint32> VALID_GROUPS = {
     // Ores & Mining
@@ -200,8 +202,8 @@ int MarketBotMgr::ExpireOldOrders() {
     _log(MARKET__TRACE, "ExpireOldOrders: now = %" PRIu64, now);
 
     if (!sDatabase.RunQuery(res,
-        "SELECT orderID FROM mktOrders WHERE (issued + CAST(duration AS UNSIGNED) * 86400000000) < CAST(%" PRIu64 " AS UNSIGNED) AND ownerID = %u",
-        now, BOT_OWNER_ID)) {
+        "SELECT orderID FROM mktOrders WHERE (issued + CAST(duration AS UNSIGNED) * %" PRIu64 ") < CAST(%" PRIu64 " AS UNSIGNED) AND ownerID = %u",
+        FILETIME_TICKS_PER_DAY, now, BOT_OWNER_ID)) {
         _log(MARKET__DB_ERROR, "Failed to query expired bot orders.");
         return 0;
     }
