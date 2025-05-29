@@ -95,7 +95,7 @@ public:
     bool                    contraband() const          { return m_data.contraband; }
     bool                    isSingleton() const         { return m_data.singleton != 0; }
     int32                   quantity() const            { return m_data.quantity; }
-
+    // ---inventory updates; prevents null reference issues
     uint32 itemID() const {
         uintptr_t addr = reinterpret_cast<uintptr_t>(this);
         if (addr < 0x1000 || addr > 0x0000FFFFFFFFFFFF) {
@@ -104,7 +104,7 @@ public:
         }
         return m_itemID;
     }
-
+     // ---inventory updates
     uint32                  ownerID() const             { return m_data.ownerID; }
     uint32                  locationID() const          { return m_data.locationID; }
     EVEItemFlags            flag() const                { return m_data.flag; }

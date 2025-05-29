@@ -182,13 +182,14 @@ void StationItem::LoadStationOffice(uint32 corpID)
         _log(ITEM__ERROR, "StationItem::LoadStationOffice() - GetMyInventory() for corp office %u in stationID %u is NULL.", officeID, m_stationID);
         return;
     }
+    // ---inventory updates; prevents null reference issues
     Inventory* inv = oRef->GetMyInventory();
     if (inv) {
         oRef->SetLoaded(inv->LoadContents());
     } else {
         _log(ITEM__ERROR, "StationItem::LoadStationOffice() - GetMyInventory() returned NULL unexpectedly during LoadContents for office %u", officeID);
     oRef->SetLoaded(false);
-}
+} // ---inventory updates
     m_officeLoaded.emplace(officeID, true);
 }
 

@@ -129,7 +129,7 @@ void ItemFactory::AddItem(InventoryItemRef iRef)
     }
     m_items.emplace(iRef->itemID(), iRef);
 }
-
+// ---inventory updates; prevents null reference issues
 void ItemFactory::SafeDeleteItem(uint32 itemID) {
     InventoryItemRef itemRef = GetItemRef(itemID);
     if (!itemRef) {
@@ -140,7 +140,7 @@ void ItemFactory::SafeDeleteItem(uint32 itemID) {
     itemRef->Delete();      // clean up the item
     RemoveItem(itemID);     // remove from factory's internal RefPtr map
 }
-
+ // ---inventory updates
 void ItemFactory::RemoveItem(uint32 itemID)
 {
     m_items.erase(itemID);

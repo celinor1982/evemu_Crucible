@@ -1776,7 +1776,7 @@ void Client::RemoveMissionItem(uint16 typeID, uint32 qty)
             } else {
                 count -= iRef->quantity();
                 iRef->Delete();
-                iRef = InventoryItemRef();
+                iRef = InventoryItemRef(); // ---inventory update
             }
         }
     }
@@ -1790,7 +1790,7 @@ void Client::RemoveMissionItem(uint16 typeID, uint32 qty)
             } else {
                 count -= iRef->quantity();
                 iRef->Delete();
-                iRef = InventoryItemRef();
+                iRef = InventoryItemRef(); // ---inventory update
             }
         }
     }

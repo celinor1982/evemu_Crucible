@@ -173,7 +173,7 @@ public:
     float GetBounty() const                             { return m_char->bounty(); }
     float GetSecurityRating() const                     { return m_char->GetSecurityRating(); }
 
-    bool AddBalance(double amount, uint8 type=Account::CreditType::ISK)
+    bool AddBalance(double amount, uint8 type=Account::CreditType::ISK) // ---marketbot update
                                                         { return m_char->AlterBalance(amount, type); }
     float GetBalance(uint8 type=Account::CreditType::ISK)
                                                         { return m_char->balance(type); }
@@ -245,7 +245,7 @@ public:
     bool IsBubbleWait()                                 { return m_bubbleWait; }
     bool IsSetStateSent()                               { return m_setStateSent; }
     bool IsSessionChange()                              { return m_sessionChangeActive; }
-    bool IsDockCooldownActive()                         { return m_dockCooldownTimer.Enabled() && !m_dockCooldownTimer.Check(); }
+    bool IsDockCooldownActive()                         { return m_dockCooldownTimer.Enabled() && !m_dockCooldownTimer.Check(); } // ---docking update
     bool IsLoginWarping();
     uint32 GetSessionChangeTime()                       { return m_sessionTimer.GetRemainingTime() / 1000; }
 
@@ -393,7 +393,7 @@ protected:
     Timer m_pingTimer;
     Timer m_scanTimer;       // used to delay scan results based on skills, items, and other shit
     Timer m_cloakTimer;      // used for tracking jump cloak
-    Timer m_dockCooldownTimer;  // Prevents premature docking after undock
+    Timer m_dockCooldownTimer;  // ---docking update; prevents premature docking after undock
     Timer m_uncloakTimer;    // used for tracking ship actions after cloak module deactivated
     Timer m_invulTimer;
     Timer m_fleetTimer;      // used to apply fleet boost on undock and jump when applicable

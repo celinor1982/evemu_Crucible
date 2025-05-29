@@ -52,10 +52,15 @@ public:
     class const_iterator
     {
     public:
+        /// Typedef for iterator category.
         using iterator_category = std::random_access_iterator_tag;
+        /// Typedef for value type.
         using value_type        = T;
+        /// Typedef for difference type.
         using difference_type   = std::ptrdiff_t;
+        /// Typedef for pointer.
         using pointer           = const T*;
+        /// Typedef for reference.
         using reference         = const T&;
 
         /// Typedef for const pointer.
@@ -94,8 +99,11 @@ public:
 
         /// Dereference operator.
         const_reference operator*() const {
+            // make sure we have valid buffer
             assert( mBuffer );
+            // make sure we're not going off the bounds
             assert( 1 <= mBuffer->end< value_type >() - *this );
+            // obtain the value and return
             return *(const_pointer)&( mBuffer->mBuffer )[ mIndex ];
         }
 
@@ -112,10 +120,15 @@ public:
 
         /// Add operator.
         const_iterator& operator+=( difference_type diff ) {
+            // turn the diff into byte diff
             const difference_type res = ( diff * sizeof( value_type ) );
+            // make sure we have valid buffer
             assert( mBuffer );
+            // make sure we won't go negative
             assert( 0 <= mIndex + res );
+            // make sure we won't go past end
             assert( mIndex + res <= mBuffer->size() );
+            // set new index
             mIndex += res;
             return *this;
         }
@@ -148,13 +161,17 @@ public:
 
         /// Diff operator.
         difference_type operator-( const const_iterator& oth ) const {
+            // make sure we have same parent buffer
             assert( oth.mBuffer == mBuffer );
+            // return difference in element offset
             return ( ( mIndex - oth.mIndex ) / sizeof( value_type ) );
         }
 
         /// Equal operator.
         bool operator==( const const_iterator& oth ) const {
+            // make sure we have same parent buffer
             assert( oth.mBuffer == mBuffer );
+            // return the result
             return ( mIndex == oth.mIndex );
         }
 
@@ -163,7 +180,9 @@ public:
 
         /// Less-than operator.
         bool operator<( const const_iterator& oth ) const {
+            // make sure we have same parent buffer
             assert( oth.mBuffer == mBuffer );
+            // return the result
             return ( mIndex < oth.mIndex );
         }
 
@@ -190,13 +209,18 @@ public:
      *
      * @author Bloody.Rabbit
      */
-    template< typename T >
+    template< typename T > // Typedef for our base due to readibility.
     class iterator : public const_iterator< T > {
     public:
+        /// Typedef for iterator category.
         using iterator_category = std::random_access_iterator_tag;
+        /// Typedef for value type.
         using value_type        = T;
+        /// Typedef for difference type.
         using difference_type   = std::ptrdiff_t;
+        /// Typedef for pointer.
         using pointer           = T*;
+        /// Typedef for reference.
         using reference         = T&;
 
         /**

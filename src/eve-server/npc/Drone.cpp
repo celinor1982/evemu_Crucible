@@ -116,10 +116,10 @@ void DroneSE::SetOwner(Client* pClient) {
 void DroneSE::Process() {
     if (m_killed)
         return;
-
+    // ---drone update; future code for drone implementation
     if (!m_self)
         return; // prevents itself from looping after item has been delete.
-
+    // ---drone update
     double profileStartTime(GetTimeUSeconds());
 
     /*  Enable base call to Process Targeting and Movement  */
@@ -136,14 +136,14 @@ void DroneSE::Process() {
 void DroneSE::SaveDrone() {
     m_self->SaveItem();
 }
-
+// ---drone update; future code for drone implementation
 void DroneSE::RemoveDrone() {
     m_self->Delete();  // delete inventory item
     sItemFactory.RemoveItem(m_self->itemID());  // unregister from factory
     m_self = InventoryItemRef();  // null it out to prevent future use
     m_killed = true;  // mark for entity cleanup
 }
-
+// ---drone update
 /*void DroneSE::RemoveDrone() { // old unsaffe way to remove drones.
     // this seems to work properly
     m_self->Delete();

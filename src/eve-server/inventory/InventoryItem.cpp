@@ -437,12 +437,14 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             _log(ITEM__WARNING, "II::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID(data);
-            InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data); // ---inventory updates; prevents null reference issues
+             // ---inventory updates; prevents null reference issues
+            InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
             if (itemRef.get() == nullptr)
                 return InventoryItemRef(nullptr);
             if (itemRef->GetMyInventory() == nullptr)
                 itemRef->pInventory = new Inventory(itemRef);
-            return itemRef; // ---
+            return itemRef;
+             // ---inventory updates
         } break;
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure:
@@ -470,24 +472,28 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
                 case EVEDB::invGroups::Control_Bunker:
                 case EVEDB::invGroups::Capture_Point: {
                     uint32 itemID = InventoryItem::CreateItemID(data);
-                    InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data); // ---inventory updates; prevents null reference issues
-                    if (itemRef.get() == nullptr)
-                        return InventoryItemRef(nullptr);
-                    if (itemRef->GetMyInventory() == nullptr)
-                        itemRef->pInventory = new Inventory(itemRef);
-                    return itemRef; // ---
-                } break;
-                case EVEDB::invGroups::Sentry_Gun:      // these are not saved
-                case EVEDB::invGroups::Temporary_Cloud:
-                default: {  // *should*  be all npcs
-                    // use temp items and NOT save to db.
-                    uint32 itemID = InventoryItem::CreateTempItemID(data);
+                     // ---inventory updates; prevents null reference issues
                     InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
                     if (itemRef.get() == nullptr)
                         return InventoryItemRef(nullptr);
                     if (itemRef->GetMyInventory() == nullptr)
                         itemRef->pInventory = new Inventory(itemRef);
                     return itemRef;
+                     // ---inventory updates
+                } break;
+                case EVEDB::invGroups::Sentry_Gun:      // these are not saved
+                case EVEDB::invGroups::Temporary_Cloud:
+                default: {  // *should*  be all npcs
+                    // use temp items and NOT save to db.
+                    uint32 itemID = InventoryItem::CreateTempItemID(data);
+                     // ---inventory updates; prevents null reference issues
+                    InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
+                    if (itemRef.get() == nullptr)
+                        return InventoryItemRef(nullptr);
+                    if (itemRef->GetMyInventory() == nullptr)
+                        itemRef->pInventory = new Inventory(itemRef);
+                    return itemRef;
+                     // ---inventory updates
                 } break;
             }
         } break;
@@ -570,10 +576,12 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
             } else if (iType->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in TEMP_ENTITY_ID range and does NOT save Force_Field to db
                 uint32 itemID = InventoryItem::CreateTempItemID(data);
-                InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data); // ---inventory updates; prevents null reference issues
+                // ---inventory updates; prevents null reference issues
+                InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
                 if (itemRef->GetMyInventory() == nullptr)
                     itemRef->pInventory = new Inventory(itemRef);
-                return itemRef; // ---inventory updates
+                return itemRef;
+                 // ---inventory updates
             } else {
                 // Spawn new Celestial Object
                 return CelestialObject::Spawn(data);

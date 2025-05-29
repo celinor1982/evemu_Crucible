@@ -278,7 +278,7 @@ void Inventory::DeleteContents()
         iRef = itr->second;
         ++itr;
         iRef->Delete();
-        iRef = InventoryItemRef();
+        iRef = InventoryItemRef(); // ---inventory update
     }
 
     mContents.clear();

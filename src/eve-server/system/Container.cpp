@@ -74,10 +74,11 @@ CargoContainerRef CargoContainer::Spawn( ItemData &data) {
     uint32 containerID = CargoContainer::CreateItemID(data );
     if (containerID == 0 )
         return CargoContainerRef(nullptr);
+    // ---inventory updates; prevents null reference issues
     CargoContainerRef containerRef = CargoContainer::Load(containerID);
     if (!containerRef)
         return CargoContainerRef(nullptr);  // Prevent null deref if loading fails
-
+    // ---inventory update
     // Create default dynamic attributes in the AttributeMap:
     containerRef->SetAttribute(AttrRadius,        containerRef->type().radius(), false);			// Radius
     containerRef->SetAttribute(AttrShieldCharge,  containerRef->GetAttribute(AttrShieldCapacity), false);  // Shield Charge
@@ -302,7 +303,7 @@ void ContainerSE::Process() {
         m_deleteTimer.Disable();
         sLog.Magenta( "ContainerSE::Process()", "Garbage Collection is removing Cargo Container %u.", m_contRef->itemID() );
         m_contRef->Delete();
-        sItemFactory.RemoveItem(this->GetSelf()->itemID());
+        sItemFactory.RemoveItem(this->GetSelf()->itemID()); // ---inventory updates; prevents null reference issues
     }
 }
 
@@ -500,7 +501,7 @@ void WreckSE::Process() {
         m_deleteTimer.Disable();
         sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", m_contRef->itemID() );
         Delete();
-        sItemFactory.RemoveItem(this->GetSelf()->itemID());
+        sItemFactory.RemoveItem(this->GetSelf()->itemID()); // ---inventory updates; prevents null reference issues
     }
 }
 

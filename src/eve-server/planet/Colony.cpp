@@ -350,7 +350,7 @@ void Colony::AbandonColony()
     }
     InventoryItemRef iRef = sItemFactory.GetItemRef(m_colonyID);
     iRef->Delete();
-    iRef = InventoryItemRef();
+    iRef = InventoryItemRef(); // ---inventory updates
     m_db.DeleteColony(m_colonyID, m_pSE->GetID(), m_client->GetCharacterID());
     SafeDelete(ccPin);
     ccPin = new PI_CCPin();
@@ -952,7 +952,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     CargoContainerRef contRef = sItemFactory.SpawnCargoContainer(canData);
     if (contRef.get() == nullptr) {
         contRef->Delete();
-        contRef = CargoContainerRef();
+        contRef = CargoContainerRef(); // ---inventory updates
         if (m_client->CanThrow())
             throw CustomError ("Unable to spawn item of type %u.", EVEDB::invTypes::PlanetaryLaunchContainer);
     }
