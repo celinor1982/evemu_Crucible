@@ -128,7 +128,7 @@ void MarketBotMgr::Process(bool overrideTimer) {
         return;
     }
 
-    if (!overrideTimer && now < m_nextRunTime) {
+    if (!overrideTimer && now + std::chrono::seconds(5) < m_nextRunTime) { // ---marketbot update; 5 second jitter
         auto timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(m_nextRunTime - now).count();
         if (timeLeft > 0) {
             sLog.Green("     Trader Joe", "Update timer not ready yet. Next run in %lld seconds.", timeLeft / 1000);
