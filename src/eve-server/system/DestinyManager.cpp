@@ -511,9 +511,14 @@ void DestinyManager::Stop() {
     }
 
     // AP not implemented yet in this version  -allan 4Mar15
-    // Clear autopilot
+    // ---autopilot update; original code, constantly calls "stop" even when stop state is not called for in autopilot, which causes ships to constantly stop.
     if (mySE->HasPilot()) {
-        mySE->GetPilot()->SetAutoPilot(false);
+        Client* pClient = mySE->GetPilot();
+        if (!pClient->IsAutoPilot()) {
+            pClient->SetAutoPilot(false);
+        } else {
+            _log(AUTOPILOT__TRACE, "Stop() called but autopilot is still active, skipping disable.");
+        }
     }
 
     if (m_userSpeedFraction == 0.0f) {
